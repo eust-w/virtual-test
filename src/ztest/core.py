@@ -1,5 +1,6 @@
 from utils.error import ZTestError
 from utils import bash
+import sys
 
 
 class CmdOptionError(ZTestError):
@@ -24,6 +25,15 @@ class Cmd(object):
 
     def run(self, args, extra=None):
         self._check()
+        self._run(args, extra)
+
+    @staticmethod
+    def info(msg):
+        sys.stdout.write(msg)
+
+    @staticmethod
+    def err(err):
+        sys.stderr.write('ERROR: %s' % err)
 
 
 def check_tool(name):

@@ -1,4 +1,6 @@
 import subprocess
+import sys
+
 from error import ZTestError
 
 
@@ -49,6 +51,23 @@ def call(command, success_code=0):
         raise BashError(msg='command[%s] failed', cmd=command, retcode=r, stdout=o, stderr=e)
 
     return o
+
+
+def call_with_screen_output(cmd, raise_error=True, work_dir=None):
+    # type: (str, bool, str) -> None
+
+    if work_dir is None:
+        print('[BASH]: %s' % cmd)
+    else:
+        print('[BASH (%s) ]: %s' % (work_dir, cmd))
+
+    p = subprocess.Popen(cmd, shell=True, stdout=sys.stdout,
+                         stdin=subprocess.PIPE, stderr=sys.stderr,
+                         cwd=work_dir,
+                         close_fds=True)
+    r = p.wait()
+    if r != 0 and raise_error:
+        raise BashError(msg='command[%s] failed' % cmd, cmd=cmd, retcode=r, stdout='', stderr='')
 
 
 def run_with_command_check(command):

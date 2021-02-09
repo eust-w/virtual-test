@@ -1,5 +1,5 @@
-from core import Cmd, CmdOptionError
-from env import env_var
+from ztest.core import Cmd, CmdOptionError
+from ztest.env import env_var
 
 
 SOURCE_DIR = env_var('ztest.source.dir', str, None)
@@ -36,3 +36,4 @@ class RunTest(Cmd):
                                  ' environment variable[%s]' % SOURCE_DIR.name)
 
         self.case_path = self._get_full_case_path(args.src, case_file)
+
