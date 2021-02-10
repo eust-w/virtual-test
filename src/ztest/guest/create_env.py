@@ -23,7 +23,7 @@ class CreateVenv(Cmd):
         req_file_fd, req_file_path = tempfile.mkstemp()
         setup = distutils.core.run_setup(setup_py)
         reqs = setup.install_requires
-        reqs.append('pytest') # install for unit test
+        reqs.append('pytest')  # install for unit test
 
         test_req_file = '%s/test_requirements.txt' % sub_project_path
         if os.path.isfile(test_req_file):

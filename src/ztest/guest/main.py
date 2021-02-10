@@ -3,11 +3,13 @@ import sys
 
 import create_env
 import install
+import run_test
 from utils.error import ZTestError
 
 commands = [
     create_env.CreateVenv(),
-    install.InstallCmd()
+    install.InstallCmd(),
+    run_test.RunTestCmd()
 ]
 
 
