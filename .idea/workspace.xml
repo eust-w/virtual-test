@@ -3,11 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="725c7f94-9fc9-435b-a25a-bd7154696cbf" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/bash.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/bash.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ztest/core.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/core.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/guest.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/host.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/run_test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/venv/lib/python2.7/site-packages/backports/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/venv/lib/python2.7/site-packages/backports/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ztest/guest/create_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/guest/create_env.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ztest/guest/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/guest/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

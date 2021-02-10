@@ -29,11 +29,11 @@ class Cmd(object):
 
     @staticmethod
     def info(msg):
-        sys.stdout.write(msg)
+        sys.stdout.write('%s\n' % msg)
 
     @staticmethod
     def err(err):
-        sys.stderr.write('ERROR: %s' % err)
+        sys.stderr.write('ERROR: %s\n' % err)
 
 
 def check_tool(name):

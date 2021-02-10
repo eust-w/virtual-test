@@ -12,9 +12,9 @@ class CreateVenv(Cmd):
         super(CreateVenv, self).__init__(
             name='venv',
             help='create venv for sub-projects',
-            prog='ztest-guest venv [options]',
+            prog='zguest venv [options]',
             args=[
-                (['--src'], {'help': 'source directory', 'dest': 'src', 'default': '/root/zstack-utility'}),
+                (['--src'], {'help': 'source directory', 'dest': 'src', 'default': '/root/zstack-utility', 'required': True}),
                 (['--dst'], {'help': 'dest directory where venv for sub-projects to be created', 'dest': 'dst', 'default':'/root/test-venv'})
             ]
         )

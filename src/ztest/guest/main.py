@@ -2,10 +2,12 @@ import argparse
 import sys
 
 import create_env
+import install
 from utils.error import ZTestError
 
 commands = [
-    create_env.CreateVenv()
+    create_env.CreateVenv(),
+    install.InstallCmd()
 ]
 
 
