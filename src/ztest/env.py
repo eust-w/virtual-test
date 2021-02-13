@@ -34,3 +34,7 @@ def set_env_var(name, value):
     # type: (str, typing.Any) -> None
 
     os.environ[name] = str(value)
+
+
+SOURCE_PARENT_DIR_IN_VM = env_var('ztest.vm.source.parent.dir', str, '/root')
+SSH_PRIV_KEY_FILE = env_var('ztest.ssh.privatekey', str, '~/.ztest/ssh/id_rsa')

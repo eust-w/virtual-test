@@ -2,4 +2,4 @@
 
 rm -rf dist/
 python setup.py sdist
-pip install dist/ztest*
+sudo pip install dist/ztest*
