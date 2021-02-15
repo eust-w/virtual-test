@@ -1,13 +1,17 @@
 import os.path
 
 import ignite
-import sync_source
 from utils.error import ZTestError
+from utils import retry
+from utils import bash
 from ztest import env
 from ztest.core import Cmd
 
 SOURCE_DIR = env.env_var('ztest.source.dir', str, None)
+IGNORED_SOURCE = env.env_var('ztest.source.ignore', str, '.git,dist')
 TEST_IMAGE_TAG = env.env_var('ztest.image.tag', str, 'pyut:0.3')
+WAIT_FOR_VM_SSD_TIMEOUT = env.env_var('ztest.vm.waitSshdTimeout', int, 30)
+WAIT_FOR_VM_SSD_CHECK_INTERVAL = env.env_var('ztest.vm.checkSshdUpInterval', float, 0.5)
 
 
 class RunTest(Cmd):
@@ -24,25 +28,39 @@ class RunTest(Cmd):
         )
 
         self.vm_id = None
+        self.vm_ip = None
         self.image = None
         self.vm_name = None
         self.case_path = None
         self.source_root = None
 
-    def _get_full_case_path(self, src_dir, case_file):
-        pass
-
     def _run_vm(self):
         self.vm_id = ignite.run_vm(self.image, self.vm_name)
+        self.vm_ip = ignite.get_vm_first_ip(self.vm_id)
 
     def _sync_source(self):
-        sync_source.sync_source_to_vm(self.vm_id, self.source_root)
+        ignored = IGNORED_SOURCE.value().split(',')
+        ignored = ['--exclude "%s"' % i.strip() for i in ignored]
+        if ignored:
+            bash.call_with_screen_output(
+                'rsync -avz %s -e "ssh -i %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --delete --progress %s root@%s:%s' %
+                (' '.join(ignored), env.SSH_PRIV_KEY_FILE.value(), self.source_root, self.vm_ip, env.SOURCE_PARENT_DIR_IN_VM.value()))
+        else:
+            bash.call_with_screen_output('rsync -avz -e "ssh -i %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --delete --progress %s root@%s:%s' %
+                (env.SSH_PRIV_KEY_FILE.value(), self.source_root, self.vm_ip, env.SOURCE_PARENT_DIR_IN_VM.value()))
+
+    @retry(time_out=WAIT_FOR_VM_SSD_TIMEOUT.value(), check_interval=WAIT_FOR_VM_SSD_CHECK_INTERVAL.value())
+    def _wait_for_vm_sshd(self):
+        r, o, e = bash.run('ssh -i %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@%s "echo 1"' % (env.SSH_PRIV_KEY_FILE.value(), self.vm_ip))
+
+        if r != 0:
+            raise ZTestError('unable to ssh into root@%s, %s' % (self.vm_ip, e))
 
     def _run(self, args, extra=None):
         if not args.src:
             args.src = SOURCE_DIR.value()
 
-        src_root = os.path.split(args.src)[0]
+        src_root = args.src.split(os.sep)[0]
         if not os.path.isdir(src_root):
             raise ZTestError('cannot find source root: %s' % src_root)
 
@@ -60,4 +78,5 @@ class RunTest(Cmd):
         self.vm_name = os.path.splitext(os.path.basename(args.src))[0].replace('_', '-')
 
         self._run_vm()
+        self._wait_for_vm_sshd()
         self._sync_source()

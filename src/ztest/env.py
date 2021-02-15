@@ -18,16 +18,16 @@ class EnvVariable(object):
             if v is not None:
                 return self.type(v)
             else:
-                return self.default
+                return self.type(self.default)
         except TypeError as ex:
             raise ZTestError('environment[%s] is defined as type[%s] but get %s. %s' %
                             (self.name, self.type, type(v), str(ex)))
 
 
-def env_var(name, type=str, default=None):
+def env_var(name, the_type, default=None):
     # type: (str, typing.Type, typing.Any) -> EnvVariable
 
-    return EnvVariable(name=name, type=type, default=default)
+    return EnvVariable(name=name, type=the_type, default=default)
 
 
 def set_env_var(name, value):
