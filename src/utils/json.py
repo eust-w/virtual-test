@@ -1,5 +1,4 @@
 import simplejson
-from utils.error import ZTestError
 
 
 class _DynamicDictMetadata(object):
@@ -160,7 +159,7 @@ def loads_as_dict(json_str):
     try:
         return simplejson.loads(json_str)
     except simplejson.decoder.JSONDecodeError as ex:
-        raise ZTestError("Unable to json.loads() the string, %s; string to load is:\n%s" % (str(ex), json_str))
+        raise Exception("Unable to json.loads() the string, %s; string to load is:\n%s" % (str(ex), json_str))
 
 
 def loads(json_str):

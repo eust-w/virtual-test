@@ -1,12 +1,14 @@
 from ztest import cli
-import run_test
+import run_test_cmd
 import test_cmd
-import cleanup
+import cleanup_cmd
+import init_cmd
 
 commands = [
-    run_test.RunTest(),
+    init_cmd.InitCmd(),
+    run_test_cmd.RunTest(),
     test_cmd.TestCmd(),
-    cleanup.CleanupCmd()
+    cleanup_cmd.CleanupCmd()
 ]
 
 

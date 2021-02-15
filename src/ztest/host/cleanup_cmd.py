@@ -1,6 +1,7 @@
 from ztest.core import Cmd
 from utils import bash
 import ignite
+import docker
 from ztest import env
 from utils.error import ZTestError
 
@@ -13,6 +14,14 @@ class CleanupCmd(Cmd):
             name='cleanup',
             help='cleanup test environment, including removing all vms'
         )
+
+    def _cleanup_docker(self):
+        containers = docker.list_containers()
+        container_ids = [c.ID for c in containers]
+        docker.kill_containers(container_ids)
+        container_ids = [c.ID for c in docker.list_containers(included_stopped=True)]
+        docker.rm_containers(container_ids)
+
 
     def _cleanup_ignite(self):
         running_vm_ids = ignite.list_all_vm_ids()
@@ -59,4 +68,5 @@ class CleanupCmd(Cmd):
 
     def _run(self, args, extra=None):
         self._cleanup_vms()
+        self._cleanup_docker()
 
