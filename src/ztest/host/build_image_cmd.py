@@ -5,11 +5,12 @@ from utils import bash
 from ztest.core import Cmd
 from ztest import env
 import cleanup_cmd
-import init_cmd
 import docker
 from jinja2 import Template
+import ignite
 
 DOCKER_IMAGE_TEST_SOURCE_EXCLUDED = env.env_var('ztest.docker.baseImage.testSourceExcluded', str, '.git,dist')
+DOCKER_IMAGE_TAG = env.env_var('ztest.docker.baseImage.tag', str, 'ztest:latest')
 
 
 class BuildImageCmd(Cmd):
@@ -21,17 +22,19 @@ class BuildImageCmd(Cmd):
                 (['--only-docker'], {'help': 'only build docker image', 'action': 'store_true', 'dest': 'only_docker', 'default': False}),
                 (['--docker-build-src'], {'help': 'the folder containing DockerBuild file', 'dest': 'docker_build_src', 'default': None}),
                 (['--ztest-pkg'], {'help': 'ZTest python package file', 'dest': 'ztest_pkg', 'required': True}),
-                (['--test-src'], {'help': 'source directory that includes code to be tested', 'dest': 'test_src', 'required': True})
+                (['--test-src'], {'help': 'source directory that includes code to be tested', 'dest': 'test_src', 'required': True}),
+                (['--tag'], {'help': 'the tag for image in docker registry, e.g. ztest:latest', 'dest': 'tag', 'default': DOCKER_IMAGE_TAG.value()}),
+                (['--use-existing'], {'help': 'used existing docker image with tag', 'dest': 'use_existing', 'action': 'store_true', 'default': False})
             ]
         )
 
         self.docker_build_root = None
         self.ztest_pkg = None
         self.test_src = None
+        self.tag = None
 
     def _cleanup_old_docker_image(self):
-        docker.rm_old_docker_image(init_cmd.DOCKER_IMAGE_TAG.value())
-
+        docker.rm_old_docker_image(self.tag)
 
     def _copy_source_to_tmpdir(self, build_root):
         paths = [p for p in self.test_src.split('/') if p.strip()]
@@ -80,7 +83,7 @@ class BuildImageCmd(Cmd):
         with open(docker_file, 'w+') as fd:
             fd.write(content)
 
-        bash.call_with_screen_output('docker build -t %s .' % init_cmd.DOCKER_IMAGE_TAG.value(), work_dir=build_root)
+        bash.call_with_screen_output('docker build -t %s .' % self.tag, work_dir=build_root)
 
     def _run(self, args, extra=None):
         self.docker_build_src = os.path.abspath(args.docker_build_src)
@@ -98,11 +101,22 @@ class BuildImageCmd(Cmd):
         if not os.path.isdir(self.test_src):
             raise ZTestError('cannot find test source: %s' % self.test_src)
 
+        self.tag = args.tag
+        if not self.tag:
+            self.tag = DOCKER_IMAGE_TAG.value()
+
         cleanup = cleanup_cmd.CleanupCmd()
         cleanup.run(None, None)
 
-        self._cleanup_old_docker_image()
-        self._build_docker_image()
+        if not args.use_existing:
+            self._cleanup_old_docker_image()
+            self._build_docker_image()
 
+        if not docker.find_image(self.tag):
+            raise ZTestError('not docker image with tag[%s] found, run "docker image ls" to check' % self.tag)
 
+        if not args.only_docker:
+            ignite.import_image(self.tag)
+
+        self.info('\nSUCCESSFULLY build image in ignite: %s. run "ignite image ls" could see it' % self.tag)
 

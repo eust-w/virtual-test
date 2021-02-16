@@ -49,16 +49,21 @@ def rm_containers(container_ids):
     bash.call_with_screen_output('docker rm %s' % ' '.join(container_ids))
 
 
+def find_image(tag):
+    # type: (str) -> json.DynamicDict
+
+    images = list_images()
+    for i in images:
+        if '%s:%s' % (i.Repository, i.Tag) == tag:
+            return i
+
+    return None
+
+
 def rm_old_docker_image(tag):
     # type: (str) -> None
 
-    images = list_images()
-    target_image = None
-    for i in images:
-        if '%s:%s' % (i.Repository, i.Tag) == tag:
-            target_image = i
-            break
-
+    target_image = find_image(tag)
     if not target_image:
         return
 

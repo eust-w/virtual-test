@@ -105,3 +105,8 @@ def rm_vms(ids):
     if ids:
         bash.call_with_screen_output('ignite rm %s' % ' '.join(ids))
 
+
+def import_image(tag):
+    # type: (str) -> None
+    bash.call_with_screen_output('ignite --runtime docker image import %s' % tag)
+
