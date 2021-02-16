@@ -51,30 +51,7 @@ class InitCmd(Cmd):
         return founds[0]
 
     def _cleanup_old_docker_image(self):
-        images = docker.list_images()
-        target_image = None
-        for i in images:
-            if '%s:%s' % (i.Repository, i.Tag) == DOCKER_IMAGE_TAG.value():
-                target_image = i
-                break
-
-        if not target_image:
-            return
-
-        containers = docker.list_containers(included_stopped=True)
-        container_ids_to_kill = []
-        for c in containers:
-            if c.Image == target_image.ID:
-                container_ids_to_kill.append(c.ID)
-
-        if container_ids_to_kill:
-            docker.kill_containers(container_ids_to_kill)
-
-        if container_ids_to_kill:
-            docker.rm_containers(container_ids_to_kill)
-
-        if target_image:
-            bash.call_with_screen_output('docker image rm %s' % target_image.ID)
+        docker.rm_old_docker_image(DOCKER_IMAGE_TAG.value())
 
 
     def _import_image(self):
@@ -90,6 +67,17 @@ class InitCmd(Cmd):
 
     def _run_container(self):
         self.container_id = bash.call('docker run -d %s' % DOCKER_IMAGE_TAG.value()).strip('\n')
+
+
+    def _create_venv(self):
+        bash.call_with_screen_output('docker exec %s zguest venv' % self.container_id)
+
+
+    def _install_ztest(self):
+        bash.call_with_screen_output('docker cp %s %s:/root' % (self.ztest_pkg, self.container_id))
+        target_path = os.path.join('/root', os.path.basename(self.ztest_pkg))
+        bash.call_with_screen_output('docker exec %s pip install %s' % (self.container_id, target_path))
+
 
     def _copy_source(self):
         paths = [p for p in self.source.split('/') if p.strip()]
@@ -139,7 +127,9 @@ class InitCmd(Cmd):
         self._cleanup_old_docker_image()
         self._import_image()
         self._run_container()
+        self._install_ztest()
         self._copy_source()
+        self._create_venv()
 
     def _find_image(self):
         founds = []

@@ -8,7 +8,7 @@ def run_command(commands):
     # type: (list) -> None
 
     parser = argparse.ArgumentParser(description="""\
-    ZTest guest tool
+    ZTest tool
     """)
     sub_parser = parser.add_subparsers(help='sub-command help', dest="sub_command_name")
 

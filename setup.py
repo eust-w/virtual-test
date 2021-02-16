@@ -16,6 +16,12 @@ setup(name='ztest',
       include_package_data=True,
       zip_safe=True,
       install_requires=[
+          "simplejson==3.17.2",
+          "typing==3.7.4.3",
+          "docker==4.4.1",
+          "mock==3.0.5",
+          "setuptools==44.1.1",
+          "Jinja2==2.11.3",
       ],
       entry_points={
           'console_scripts': [
@@ -23,4 +29,4 @@ setup(name='ztest',
               'ztest = ztest.host.main:main'
           ]
       }
-)
+      )

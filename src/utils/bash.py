@@ -33,19 +33,20 @@ def _merge_shell_stdout_stderr(stdout, stderr):
     return ','.join(lst)
 
 
-def run(command):
-    # type: (str) -> (int, str, str)
+def run(command, work_dir=None):
+    # type: (str, str) -> (int, str, str)
 
     p = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                         cwd=work_dir,
                          close_fds=True)
     o, e = p.communicate()
     return p.returncode, str(o), str(e)
 
 
-def call(command, success_code=0):
-    # type: (str, int) -> str
+def call(command, success_code=0, work_dir=None):
+    # type: (str, int, str) -> str
 
-    r, o, e = run(command)
+    r, o, e = run(command, work_dir=work_dir)
 
     if r != success_code:
         raise BashError(msg='command[%s] failed', cmd=command, retcode=r, stdout=o, stderr=e)
@@ -70,20 +71,20 @@ def call_with_screen_output(cmd, raise_error=True, work_dir=None):
         raise BashError(msg='command[%s] failed' % cmd, cmd=cmd, retcode=r, stdout='', stderr='')
 
 
-def run_with_command_check(command):
-    # type: (str) -> (int, str, str)
+def run_with_command_check(command, work_dir=None):
+    # type: (str, str) -> (int, str, str)
 
-    r, o, e = run(command)
+    r, o, e = run(command, work_dir=work_dir)
     if r == 127:
         raise MissingShellCommand('command[%s] not found in target system, %s' % (cmd, _merge_shell_stdout_stderr(o, e)))
 
     return r, o, e
 
 
-def run_with_err_msg(command, err_msg):
-    # type: (str, str) -> str
+def run_with_err_msg(command, err_msg, work_dir=None):
+    # type: (str, str, str) -> str
 
-    r, o, e = run_with_command_check(command)
+    r, o, e = run_with_command_check(command, work_dir=work_dir)
 
     if r != 0:
         raise BashError(msg=err_msg, cmd=command, retcode=r, stdout=o, stderr=e)
