@@ -1,6 +1,7 @@
 from utils import bash
 from utils import json
 from utils.error import ZTestError
+from ztest import env
 
 
 def list_all_vm_ids(include_stopped=False):
@@ -128,9 +129,9 @@ def get_vm_first_ip(vm_id):
 
 
 def run_vm(image, vm_name):
-    # type: (str) -> str
+    # type: (str, str) -> str
 
-    bash.call('ignite run %s --name %s' % (image, vm_name))
+    bash.call_with_screen_output('ignite run %s --name %s --ssh=%s' % (image, vm_name, env.SSH_PUB_KEY_FILE.value()))
 
     for id, name in list_all_vm_ids_and_names():
         if vm_name == name:
@@ -156,4 +157,11 @@ def rm_vms(ids):
 def import_image(tag):
     # type: (str) -> None
     bash.call_with_screen_output('ignite --runtime docker image import %s' % tag)
+
+
+def bash_call_with_screen_output(vm_id, cmd, priv_key_path):
+    # type: (str, str, str) -> None
+
+    cmd = "ignite exec %s '%s' -i %s" % (vm_id, cmd, priv_key_path)
+    bash.call_with_screen_output(cmd)
 
