@@ -8,6 +8,7 @@ import cleanup_cmd
 import docker
 from jinja2 import Template
 import ignite
+from ztest import config
 
 DOCKER_IMAGE_TEST_SOURCE_EXCLUDED = env.env_var('ztest.docker.baseImage.testSourceExcluded', str, '.git,dist')
 DOCKER_IMAGE_TAG = env.env_var('ztest.docker.baseImage.tag', str, 'ztest:latest')
@@ -117,6 +118,7 @@ class BuildImageCmd(Cmd):
 
         if not args.only_docker:
             ignite.import_image(self.tag)
+            config.CONFIG.set_image_tag(self.tag)
 
         self.info('\nSUCCESSFULLY build image in ignite: %s. run "ignite image ls" could see it' % self.tag)
 

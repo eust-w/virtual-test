@@ -36,5 +36,10 @@ def set_env_var(name, value):
     os.environ[name] = str(value)
 
 
+CONF_DIR = env_var('ztest.conf.dir', str, os.path.expanduser('~/.ztest'))
 SOURCE_PARENT_DIR_IN_VM = env_var('ztest.vm.source.parent.dir', str, '/root')
-SSH_PRIV_KEY_FILE = env_var('ztest.ssh.privatekey', str, '~/.ztest/ssh/id_rsa')
+SSH_PRIV_KEY_FILE = env_var('ztest.ssh.privatekey', str, os.path.join(CONF_DIR.value(), '/ssh/id_rsa'))
+
+if not os.path.isdir(CONF_DIR.value()):
+    os.makedirs(CONF_DIR.value())
+

@@ -76,7 +76,7 @@ def run_with_command_check(command, work_dir=None):
 
     r, o, e = run(command, work_dir=work_dir)
     if r == 127:
-        raise MissingShellCommand('command[%s] not found in target system, %s' % (cmd, _merge_shell_stdout_stderr(o, e)))
+        raise MissingShellCommand('command[%s] not found in target system, %s' % (command, _merge_shell_stdout_stderr(o, e)))
 
     return r, o, e
 

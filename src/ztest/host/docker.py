@@ -81,3 +81,40 @@ def rm_old_docker_image(tag):
 
     if target_image:
         bash.call_with_screen_output('docker image rm %s' % target_image.ID)
+
+
+def cp_in(container_id, src, dst):
+    # type: (str, str, str) -> None
+
+    bash.call_with_screen_output('docker cp %s %s:%s' % (src, container_id, dst))
+
+
+def bash_run(container_id, cmd):
+    # type: (str, str) -> (r, str, str)
+
+    return bash.run('docker exec %s %s' % (container_id, cmd))
+
+
+def bash_call(container_id, cmd):
+    # type: (str, str) -> str
+
+    return bash.call('docker exec %s %s' % (container_id, cmd))
+
+
+def bash_call_with_screen_output(container_id, cmd):
+    # type: (str, str) -> None
+
+    return bash.call_with_screen_output('docker exec %s %s' % (container_id, cmd))
+
+
+def commit(container_id, new_tag):
+    # type: (str, str) -> None
+
+    bash.call_with_screen_output('docker commit %s %s' % (container_id, new_tag))
+
+
+def run(options):
+    # type: (str) -> str
+
+    return bash.call('docker run %s' % options).strip('\n\t\r ')
+
