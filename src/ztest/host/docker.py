@@ -70,7 +70,7 @@ def rm_old_docker_image(tag):
     containers = list_containers(included_stopped=True)
     container_ids_to_kill = []
     for c in containers:
-        if c.Image == target_image.ID:
+        if c.Image == tag:
             container_ids_to_kill.append(c.ID)
 
     if container_ids_to_kill:

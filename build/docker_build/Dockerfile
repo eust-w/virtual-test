@@ -5,6 +5,7 @@ RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shang
 
 RUN echo 'password' | passwd --stdin root
 RUN systemctl enable sshd.service
+RUN systemctl enable libvirtd.service
 
 RUN mkdir -p /root/.ssh
 RUN chmod 0700 /root/.ssh

@@ -10,8 +10,30 @@ from jinja2 import Template
 import ignite
 from ztest import config
 
-DOCKER_IMAGE_TEST_SOURCE_EXCLUDED = env.env_var('ztest.docker.baseImage.testSourceExcluded', str, '.git,dist')
+DOCKER_IMAGE_TEST_SOURCE_EXCLUDED = env.env_var('ztest.docker.baseImage.testSourceExcluded', str, '.git,dist,venv')
 DOCKER_IMAGE_TAG = env.env_var('ztest.docker.baseImage.tag', str, 'ztest:latest')
+
+
+def copy_source_to_tmpdir(test_src, build_root):
+    paths = [p for p in test_src.split('/') if p.strip()]
+    if len(paths) == 1:
+        source_dir_name = paths[0]
+    else:
+        source_dir_name = paths[-1]
+
+    tmp_source = os.path.join(build_root, 'tmp-%s' % source_dir_name)
+    bash.call('rm -rf %s' % tmp_source)
+
+    ignored = DOCKER_IMAGE_TEST_SOURCE_EXCLUDED.value().split(',')
+    ignored = [i.strip() for i in ignored]
+    ignored = ['--exclude "%s"' % i for i in ignored]
+
+    if ignored:
+        bash.call_with_screen_output('rsync -a %s %s %s' % (' '.join(ignored), test_src, tmp_source))
+    else:
+        bash.call_with_screen_output('rsync -a %s %s' % (test_src, tmp_source))
+
+    return os.path.basename(tmp_source), source_dir_name
 
 
 class BuildImageCmd(Cmd):
@@ -37,27 +59,6 @@ class BuildImageCmd(Cmd):
     def _cleanup_old_docker_image(self):
         docker.rm_old_docker_image(self.tag)
 
-    def _copy_source_to_tmpdir(self, build_root):
-        paths = [p for p in self.test_src.split('/') if p.strip()]
-        if len(paths) == 1:
-            source_dir_name = paths[0]
-        else:
-            source_dir_name = paths[-1]
-
-        tmp_source = os.path.join(build_root, 'tmp-%s' % source_dir_name)
-        bash.call('rm -rf %s' % tmp_source)
-
-        ignored = DOCKER_IMAGE_TEST_SOURCE_EXCLUDED.value().split(',')
-        ignored = [i.strip() for i in ignored]
-        ignored = ['--exclude "%s"' % i for i in ignored]
-
-        if ignored:
-            bash.call_with_screen_output('rsync -a %s %s %s' % (' '.join(ignored), self.test_src, tmp_source))
-        else:
-            bash.call_with_screen_output('rsync -a %s %s' % (self.test_src, tmp_source))
-
-        return os.path.basename(tmp_source), source_dir_name
-
     def _build_docker_image(self):
         build_root = os.path.abspath('tmp-%s' % os.path.basename(self.docker_build_src))
         bash.call_with_screen_output('rm -rf %s' % build_root)
@@ -70,7 +71,7 @@ class BuildImageCmd(Cmd):
 
         ztest_pkg_name = os.path.basename(self.ztest_pkg)
 
-        source_path, source_dir_name = self._copy_source_to_tmpdir(build_root)
+        source_path, source_dir_name = copy_source_to_tmpdir(self.test_src, build_root)
         with open(docker_file, 'r') as fd:
             content = fd.read()
             tmpt = Template(content)
