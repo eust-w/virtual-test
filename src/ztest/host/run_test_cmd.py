@@ -57,7 +57,9 @@ class RunTest(Cmd):
             description='Example: ztest test --case zstack-utility/kvmagent/kvmagent/tests/test_start_vm.py',
             args=[
                 (['--case'], {'help': 'path to case file', 'dest': 'case_path', 'required': True}),
-                (['--image'], {'help': 'image tag name, e.g. pyut:0.3', 'dest': 'image', 'default': None})
+                (['--image'], {'help': 'image tag name, e.g. pyut:0.3', 'dest': 'image', 'default': None}),
+                (['-n', '--no-zstacklib'], {'help': 'not to update zstacklib when running the test', 'action': 'store_true', 'dest': 'no_zstacklib', 'default': False}),
+                (['-f', '--fail-on-existing-vm'], {'help': 'if there is an existing vm with the same name the case uses, fail fast', 'dest': 'fail_on_existing_vm', 'action': 'store_true', 'default': False})
             ]
         )
 
@@ -66,8 +68,16 @@ class RunTest(Cmd):
         self.image = None
         self.vm_name = None
         self.case_path = None  # type: CasePath
+        self.fail_on_existing_vm = False
+        self.no_zstacklib = False
 
     def _run_vm(self):
+        if not self.fail_on_existing_vm:
+            for vm_id, vm_name in ignite.list_all_vm_ids_and_names(include_stopped=True):
+                if vm_name == self.vm_name:
+                    ignite.kill_vms([vm_id])
+                    ignite.rm_vms([vm_id])
+
         self.vm_id = ignite.run_vm(self.image, self.vm_name)
         self.vm_ip = ignite.get_vm_first_ip(self.vm_id)
 
@@ -99,6 +109,8 @@ class RunTest(Cmd):
             self.image = config.CONFIG.conf.image_tag
 
         self.vm_name = os.path.splitext(self.case_path.case_name)[0].replace('_', '-')
+        self.fail_on_existing_vm = args.fail_on_existing_vm
+        self.no_zstacklib = args.no_zstacklib
 
         self._run_vm()
         self._wait_for_vm_sshd()
@@ -106,9 +118,14 @@ class RunTest(Cmd):
         self._run_test()
 
     def _run_test(self):
+        if self.no_zstacklib:
+            cmd = 'zguest test --case %s --venv %s' % (self.case_path.case_path_in_vm, self.case_path.venv_path_in_vm),
+        else:
+            cmd = 'zguest test --case %s --venv %s --zstacklib %s' % (self.case_path.case_path_in_vm, self.case_path.venv_path_in_vm, self.case_path.zstacklib_path_in_vm)
+
         ignite.bash_call_with_screen_output(
             self.vm_id,
-            'zguest test --case %s --venv %s --zstacklib %s' % (self.case_path.case_path_in_vm, self.case_path.venv_path_in_vm, self.case_path.zstacklib_path_in_vm),
+            cmd,
             env.SSH_PRIV_KEY_FILE.value()
         )
 

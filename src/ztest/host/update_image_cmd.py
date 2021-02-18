@@ -21,7 +21,10 @@ class UpdateImageCmd(Cmd):
                 (['--new-image-tag'], {'help': 'the tag of new image', 'dest': 'new_tag', 'required': True}),
                 (['--dockerfile'], {'help': 'the path of dockerfile', 'dest': 'dockerfile', 'default': None}),
                 (['--ztest-pkg'], {'help': 'the path to ztest python package', 'dest': 'ztest_pkg', 'default': None}),
-                (['--test-source'], {'help': 'the path to the test source', 'dest': 'test_source', 'default': None})
+                (['--test-source'], {'help': 'the path to the test source', 'dest': 'test_source', 'default': None}),
+                (['--pip'], {'help': 'pip install packages, multiple packages split by comma, e.g. --pip flask,cherryPy', 'dest': 'pip', 'default': None}),
+                (['--yum'], {'help': 'yum install packages, multiple packages split by comma, e.g. --yum gdb,gcc', 'dest': 'yum', 'default': None}),
+                (['--venv'], {'help': 'update venv environment', 'action': 'store_true', 'default': False})
             ]
         )
 
@@ -30,6 +33,8 @@ class UpdateImageCmd(Cmd):
         self.dockerfile = None
         self.ztest_pkg = None
         self.test_source = None
+        self.pip = None
+        self.update_venv = None
 
     def _run(self, args, extra=None):
         if not docker.find_image(args.existing_image_tag):
@@ -46,8 +51,11 @@ class UpdateImageCmd(Cmd):
         self.dockerfile = args.dockerfile
         self.ztest_pkg = args.ztest_pkg
         self.test_source = args.test_source
+        self.pip = args.pip
+        self.update_venv = args.venv
+        self.yum = args.yum
 
-        if any([self.ztest_pkg, self.test_source]):
+        if any([self.ztest_pkg, self.test_source, self.pip, self.update_venv, self.yum]):
             self._update_partial()
         elif self.dockerfile is not None:
             self._update_by_dockerfile()
@@ -85,6 +93,19 @@ class UpdateImageCmd(Cmd):
             docker.bash_call_with_screen_output(container_id, 'rm -rf %s' % src_in_vm)
             docker.cp_in(container_id, '%s/.' % tmp_src, src_in_vm)
             bash.call_with_screen_output('rm -rf %s' % tmp_src)
+
+        if self.pip:
+            pkgs = self.pip.split(',')
+            pkgs = [p.strip() for p in pkgs]
+            docker.bash_call_with_screen_output(container_id, 'pip install %s' % ' '.join(pkgs))
+
+        if self.yum:
+            pkgs = self.yum.split(',')
+            pkgs = [p.strip() for p in pkgs]
+            docker.bash_call_with_screen_output(container_id, 'yum -y install %s' % ' '.join(pkgs))
+
+        if self.update_venv:
+            docker.bash_call_with_screen_output(container_id, 'zguest venv')
 
         docker.commit(container_id, self.new_tag)
         docker.kill_containers([container_id])

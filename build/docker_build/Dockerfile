@@ -1,6 +1,6 @@
 FROM centos:centos7.6.1810
 
-RUN yum -y install openssh-server passwd rsync iproute python-virtualenv git libvirt libvirt-devel gcc
+RUN yum -y install openssh-server passwd rsync iproute python-virtualenv git libvirt libvirt-devel gcc gdb
 RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 
 RUN echo 'password' | passwd --stdin root
@@ -21,6 +21,8 @@ COPY pip.conf /root/.pip/
 
 COPY {{ztest_pkg_path}} /root/
 RUN pip install /root/{{ztest_pkg}}
+RUN pip install pystack-debugger
+
 COPY {{test_source_path}}/* /root/{{test_source_name}}
 RUN zguest venv
 
