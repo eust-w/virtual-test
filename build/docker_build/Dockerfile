@@ -1,6 +1,6 @@
 FROM centos:centos7.6.1810
 
-RUN yum -y install openssh-server passwd rsync iproute python-virtualenv git libvirt libvirt-devel gcc gdb
+RUN yum -y install openssh-server passwd rsync iproute python-virtualenv git libvirt libvirt-devel libvirt-python gcc gdb qemu-kvm
 RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 
 RUN echo 'password' | passwd --stdin root

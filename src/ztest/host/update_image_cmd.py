@@ -17,8 +17,8 @@ class UpdateImageCmd(Cmd):
             name='update-image',
             help='update an existing image by Dockerfile/ztest and produce a new image',
             args=[
-                (['--existing-image-tag'], {'help': 'the tag of image to be updated', 'dest': 'existing_image_tag', 'required': True}),
-                (['--new-image-tag'], {'help': 'the tag of new image', 'dest': 'new_tag', 'required': True}),
+                (['-t', '--tag'], {'help': 'the tag of image to be updated', 'dest': 'existing_image_tag', 'required': True}),
+                (['-n', '--new-tag'], {'help': 'the tag of new image', 'dest': 'new_tag', 'default': None}),
                 (['--dockerfile'], {'help': 'the path of dockerfile', 'dest': 'dockerfile', 'default': None}),
                 (['--ztest-pkg'], {'help': 'the path to ztest python package', 'dest': 'ztest_pkg', 'default': None}),
                 (['--test-source'], {'help': 'the path to the test source', 'dest': 'test_source', 'default': None}),
@@ -35,17 +35,9 @@ class UpdateImageCmd(Cmd):
         self.test_source = None
         self.pip = None
         self.update_venv = None
+        self.yum = None
 
     def _run(self, args, extra=None):
-        if not docker.find_image(args.existing_image_tag):
-            raise ZTestError('cannot find any image with tag[%s]' % args.existing_image_tag)
-
-        if args.dockerfile is None and args.ztest_pkg is None:
-            raise ZTestError('you need to specify either --dockerfile or --ztest-pkg to update the image')
-
-        if docker.find_image(args.new_tag) is not None:
-            docker.rm_old_docker_image(args.new_tag)
-
         self.existing_image_tag = args.existing_image_tag
         self.new_tag = args.new_tag
         self.dockerfile = args.dockerfile
@@ -55,7 +47,18 @@ class UpdateImageCmd(Cmd):
         self.update_venv = args.venv
         self.yum = args.yum
 
-        if any([self.ztest_pkg, self.test_source, self.pip, self.update_venv, self.yum]):
+        if self.new_tag is None:
+            self.new_tag = self.existing_image_tag
+
+        if not docker.find_image(self.existing_image_tag):
+            raise ZTestError('cannot find any image with tag[%s]' % self.existing_image_tag)
+
+        partial = any([self.ztest_pkg, self.test_source, self.pip, self.update_venv, self.yum])
+
+        if self.dockerfile is None and not partial:
+            raise ZTestError('you need to specify either --dockerfile or --ztest-pkg to update the image')
+
+        if partial:
             self._update_partial()
         elif self.dockerfile is not None:
             self._update_by_dockerfile()

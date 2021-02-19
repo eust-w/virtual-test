@@ -1,4 +1,3 @@
-import distutils.core
 import os.path
 
 from utils import bash
@@ -22,8 +21,20 @@ class VenvGenerator(object):
             raise ZTestError('cannot find install.sh in %s' % zstacklib)
 
     def _generate_new_req_list(self):
-        setup = distutils.core.run_setup(self.setup_py)
-        reqs = setup.install_requires
+        bash.call_with_screen_output('python setup.py egg_info', work_dir=self.sub_project_path)
+        project_name = os.path.basename(self.sub_project_path)
+        egg_info_dir = os.path.join(self.sub_project_path, '%s.egg-info' % project_name.replace('-', '_'))
+        require_txt_file = os.path.join(egg_info_dir, 'requires.txt')
+
+        if not os.path.isfile(require_txt_file):
+            reqs = []
+        else:
+            with open(require_txt_file, 'r') as fd:
+                reqs = fd.read().split('\n')
+                reqs = [r.strip(' \t\r') for r in reqs if r.strip(' \t\r')]
+
+        bash.call_with_screen_output('rm -rf %s' % egg_info_dir)
+
         reqs.append('pytest')  # install for unit test
 
         test_req_file = '%s/test_requirements.txt' % self.sub_project_path
@@ -46,7 +57,7 @@ class VenvGenerator(object):
         if not os.path.isdir(base_dir):
             os.makedirs(base_dir)
 
-        bash.call_with_screen_output('virtualenv %s' % self.venv_dir)
+        bash.call_with_screen_output('virtualenv --system-site-packages %s' % self.venv_dir)
 
         if self.new_reqs is None:
             self.new_reqs = self._generate_new_req_list()

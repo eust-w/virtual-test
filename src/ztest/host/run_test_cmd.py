@@ -125,7 +125,7 @@ class RunTest(Cmd):
 
     def _run_test(self):
         if self.no_zstacklib:
-            cmd = 'zguest test --case %s --venv %s' % (self.case_path.case_path_in_vm, self.case_path.venv_path_in_vm),
+            cmd = 'zguest test --case %s --venv %s' % (self.case_path.case_path_in_vm, self.case_path.venv_path_in_vm)
         else:
             cmd = 'zguest test --case %s --venv %s --zstacklib %s' % (self.case_path.case_path_in_vm, self.case_path.venv_path_in_vm, self.case_path.zstacklib_path_in_vm)
 

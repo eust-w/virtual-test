@@ -10,7 +10,23 @@ from jinja2 import Template
 import ignite
 from ztest import config
 
-DOCKER_IMAGE_TEST_SOURCE_EXCLUDED = env.env_var('ztest.docker.baseImage.testSourceExcluded', str, '.git,dist,venv')
+_excluded_source_dirs = [
+    '.git',
+    'dist',
+    'venv',
+    'agentcli',
+    'apibinding',
+    'appbuildsystem',
+    'buildsystem',
+    'installation',
+    'setting',
+    'zstackbuild',
+    'zstackcli',
+    'zstackctl',
+    'bm-instance-agent'
+]
+
+DOCKER_IMAGE_TEST_SOURCE_EXCLUDED = env.env_var('ztest.docker.baseImage.testSourceExcluded', str, ','.join(_excluded_source_dirs))
 DOCKER_IMAGE_TAG = env.env_var('ztest.docker.baseImage.tag', str, 'ztest:latest')
 
 
