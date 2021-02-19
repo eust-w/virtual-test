@@ -128,10 +128,13 @@ def get_vm_first_ip(vm_id):
     return get_vm_ips(vm_id)[0]
 
 
-def run_vm(image, vm_name):
+def run_vm(image, vm_name, kernel=None):
     # type: (str, str) -> str
 
-    bash.call_with_screen_output('ignite run %s --name %s --ssh=%s' % (image, vm_name, env.SSH_PUB_KEY_FILE.value()))
+    if kernel is None:
+        bash.call_with_screen_output('ignite run %s --name %s --ssh=%s' % (image, vm_name, env.SSH_PUB_KEY_FILE.value()))
+    else:
+        bash.call_with_screen_output('ignite run %s --name %s --ssh=%s -k %s' % (image, vm_name, env.SSH_PUB_KEY_FILE.value(), kernel))
 
     for id, name in list_all_vm_ids_and_names():
         if vm_name == name:

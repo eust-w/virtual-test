@@ -14,6 +14,7 @@ TEST_IMAGE_TAG = env.env_var('ztest.image.tag', str, 'pyut:0.3')
 WAIT_FOR_VM_SSD_TIMEOUT = env.env_var('ztest.vm.waitSshdTimeout', int, 30)
 WAIT_FOR_VM_SSD_CHECK_INTERVAL = env.env_var('ztest.vm.checkSshdUpInterval', float, 0.5)
 TEST_SOURCE_ROOT_FOLDER_NAME = env.env_var('ztest.source.rootFolderName', str, 'zstack-utility')
+VM_KERNEL = env.env_var('ztest.vm.kernel', str, 'ztest:kernel-4.19.125')
 
 
 class CasePath(object):
@@ -58,6 +59,7 @@ class RunTest(Cmd):
             args=[
                 (['--case'], {'help': 'path to case file', 'dest': 'case_path', 'required': True}),
                 (['--image'], {'help': 'image tag name, e.g. pyut:0.3', 'dest': 'image', 'default': None}),
+                (['-k', '--kernel'], {'help': 'kernel for ignite starting vm,, run "ignite kernel ls" to check', 'dest': 'kernel', 'default': None}),
                 (['-n', '--no-zstacklib'], {'help': 'not to update zstacklib when running the test', 'action': 'store_true', 'dest': 'no_zstacklib', 'default': False}),
                 (['-f', '--fail-on-existing-vm'], {'help': 'if there is an existing vm with the same name the case uses, fail fast', 'dest': 'fail_on_existing_vm', 'action': 'store_true', 'default': False})
             ]
@@ -70,6 +72,7 @@ class RunTest(Cmd):
         self.case_path = None  # type: CasePath
         self.fail_on_existing_vm = False
         self.no_zstacklib = False
+        self.kernel = None
 
     def _run_vm(self):
         if not self.fail_on_existing_vm:
@@ -78,7 +81,7 @@ class RunTest(Cmd):
                     ignite.kill_vms([vm_id])
                     ignite.rm_vms([vm_id])
 
-        self.vm_id = ignite.run_vm(self.image, self.vm_name)
+        self.vm_id = ignite.run_vm(self.image, self.vm_name, self.kernel)
         self.vm_ip = ignite.get_vm_first_ip(self.vm_id)
 
     def _sync_source(self):
@@ -111,6 +114,9 @@ class RunTest(Cmd):
         self.vm_name = os.path.splitext(self.case_path.case_name)[0].replace('_', '-')
         self.fail_on_existing_vm = args.fail_on_existing_vm
         self.no_zstacklib = args.no_zstacklib
+        self.kernel = args.kernel
+        if self.kernel is None:
+            self.kernel = VM_KERNEL.value()
 
         self._run_vm()
         self._wait_for_vm_sshd()
