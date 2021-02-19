@@ -13,6 +13,9 @@ COPY ssh/id_rsa.pub /root
 RUN cat /root/id_rsa.pub > /root/.ssh/authorized_keys
 RUN chmod 0600 /root/.ssh/authorized_keys
 
+RUN mkdir -p /root/test_root/images
+COPY zstack-image-1.4.qcow2 /root/test_root/images
+
 COPY pip-20.3.4.tar.gz /root
 RUN easy_install /root/pip-20.3.4.tar.gz
 

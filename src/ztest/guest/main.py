@@ -1,12 +1,10 @@
-import create_venv
-import install
-import run_test
+import venv_cmd
+import test_cmd
 from ztest import cli
 
 commands = [
-    create_venv.CreateVenv(),
-    install.InstallCmd(),
-    run_test.RunTestCmd()
+    venv_cmd.CreateVenv(),
+    test_cmd.RunTestCmd()
 ]
 
 

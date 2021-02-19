@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 
@@ -38,7 +39,8 @@ def run(command, work_dir=None):
 
     p = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                          cwd=work_dir,
-                         close_fds=True)
+                         close_fds=True,
+                         env=os.environ)
     o, e = p.communicate()
     return p.returncode, str(o), str(e)
 
