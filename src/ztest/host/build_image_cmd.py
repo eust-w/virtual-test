@@ -1,14 +1,17 @@
 import os
+import socket
 
-from utils import ZTestError
-from utils import bash
-from ztest.core import Cmd
-from ztest import env
+import psutil
+from jinja2 import Template
+
 import cleanup_cmd
 import docker
-from jinja2 import Template
 import ignite
+from utils import ZTestError
+from utils import bash, misc
 from ztest import config
+from ztest import env
+from ztest.core import Cmd
 
 _excluded_source_dirs = [
     '.git',
@@ -58,6 +61,7 @@ class BuildImageCmd(Cmd):
             name='build-image',
             help='build docker/ignite image',
             args=[
+                (['--iso'], {'help': 'ISO path to ZStack ISO', 'dest': 'iso', 'required': True}),
                 (['--only-docker'], {'help': 'only build docker image', 'action': 'store_true', 'dest': 'only_docker', 'default': False}),
                 (['--docker-build-src'], {'help': 'the folder containing DockerBuild file', 'dest': 'docker_build_src', 'default': None}),
                 (['--ztest-pkg'], {'help': 'ZTest python package file', 'dest': 'ztest_pkg', 'required': True}),
@@ -71,15 +75,74 @@ class BuildImageCmd(Cmd):
         self.ztest_pkg = None
         self.test_src = None
         self.tag = None
+        self.iso = None
 
     def _cleanup_old_docker_image(self):
         docker.rm_old_docker_image(self.tag)
+
+    def _start_yum_http_server(self, ip, iso_dir):
+        def cleanup():
+            for p in psutil.process_iter():
+                cmdline = p.cmdline()
+                if 'python' in cmdline and 'SimpleHTTPServer' in cmdline:
+                    bash.call_with_screen_output('kill -9 %s' % p.pid)
+                    break
+
+        cleanup()
+
+        bash.call_with_screen_output('python -m SimpleHTTPServer &', work_dir=iso_dir)
+
+        @misc.retry(time_out=5)
+        def wait_for_yum_server_start():
+            so = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            so.settimeout(1)  # 1s
+            so.connect((ip, 8000))
+
+        wait_for_yum_server_start()
+
+        return cleanup
+
+    def _setup_yum_server_and_prepare_repo(self, build_root):
+        iso_dir = os.path.abspath('tmp-zstack-iso')
+
+        if os.path.isdir(iso_dir):
+            # try umount the iso_dir, ignore any error
+            bash.call_with_screen_output('umount %s' % iso_dir, raise_error=False)
+        else:
+            os.makedirs(iso_dir)
+
+        docker_host_ip = docker.get_host_ip_of_docker_bridge()
+        bash.call_with_screen_output('mount %s %s' % (self.iso, iso_dir))
+        cleanup_http_server = self._start_yum_http_server(docker_host_ip, iso_dir)
+
+        # re-write repo files with yum server ip
+        repo_dir = os.path.join(build_root, 'repo')
+        for f in os.listdir(repo_dir):
+            f = os.path.join(repo_dir, f)
+            with open(f, 'r+') as fd:
+                content = fd.read()
+                tmpt = Template(content)
+                content = tmpt.render({
+                    'ip_and_port': '%s:8000' % docker_host_ip
+                })
+
+                fd.seek(0)
+                fd.write(content)
+
+        def cleanup_func():
+            cleanup_http_server()
+            bash.call_with_screen_output('umount %s' % iso_dir)
+            bash.call_with_screen_output('rm -rf %s' % iso_dir)
+
+        return cleanup_func
 
     def _build_docker_image(self):
         build_root = os.path.abspath('tmp-%s' % os.path.basename(self.docker_build_src))
         bash.call_with_screen_output('rm -rf %s' % build_root)
         bash.call_with_screen_output('cp -r %s %s' % (self.docker_build_src, build_root))
         bash.call_with_screen_output('cp %s %s' % (self.ztest_pkg, build_root))
+
+        cleanup_yum_prepare_func = self._setup_yum_server_and_prepare_repo(build_root)
 
         docker_file = os.path.join(build_root, 'Dockerfile')
         if not os.path.isfile(docker_file):
@@ -88,7 +151,7 @@ class BuildImageCmd(Cmd):
         ztest_pkg_name = os.path.basename(self.ztest_pkg)
 
         source_path, source_dir_name = copy_source_to_tmpdir(self.test_src, build_root)
-        with open(docker_file, 'r') as fd:
+        with open(docker_file, 'r+') as fd:
             content = fd.read()
             tmpt = Template(content)
             content = tmpt.render({
@@ -98,12 +161,17 @@ class BuildImageCmd(Cmd):
                 'test_source_name': source_dir_name
             })
 
-        with open(docker_file, 'w+') as fd:
+            fd.seek(0)
             fd.write(content)
 
         bash.call_with_screen_output('docker build -t %s .' % self.tag, work_dir=build_root)
+        cleanup_yum_prepare_func()
 
     def _run(self, args, extra=None):
+        self.iso = os.path.abspath(args.iso)
+        if not os.path.isfile(self.iso):
+            raise ZTestError('cannot find ISO file: %s' % self.iso)
+
         self.docker_build_src = os.path.abspath(args.docker_build_src)
         if not self.docker_build_src:
             self.docker_build_src = os.path.abspath('docker_build')
@@ -134,6 +202,7 @@ class BuildImageCmd(Cmd):
             raise ZTestError('not docker image with tag[%s] found, run "docker image ls" to check' % self.tag)
 
         if not args.only_docker:
+            ignite.rm_image(self.tag)
             ignite.import_image(self.tag)
             config.CONFIG.set_image_tag(self.tag)
 

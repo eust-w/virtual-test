@@ -1,6 +1,9 @@
 FROM centos:centos7.6.1810
 
-RUN yum -y install openssh-server passwd rsync iproute python-virtualenv git libvirt libvirt-devel libvirt-python gcc gdb qemu-kvm
+######### Basic System Install #########
+COPY repo/* /etc/yum.repos.d/
+RUN yum --disablerepo=* --enablerepo=zstack-base,zstack-kvm -y install openssh-server passwd rsync iproute \
+    python-virtualenv git libvirt libvirt-devel libvirt-python gcc gdb qemu-kvm net-tools
 RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 
 RUN echo 'password' | passwd --stdin root
@@ -13,8 +16,13 @@ COPY ssh/id_rsa.pub /root
 RUN cat /root/id_rsa.pub > /root/.ssh/authorized_keys
 RUN chmod 0600 /root/.ssh/authorized_keys
 
+######### End Basic System Install #########
+
+# preapare KVM
 RUN mkdir -p /root/test_root/images
 COPY zstack-image-1.4.qcow2 /root/test_root/images
+COPY kvm/libvirtd.conf /etc/libvirt
+COPY kvm/qemu.conf /etc/libvirt
 
 COPY pip-20.3.4.tar.gz /root
 RUN easy_install /root/pip-20.3.4.tar.gz

@@ -1,0 +1,6 @@
+[zstack-kvm]
+name=CentOS-kvm-$releasever
+failovermethod=priority
+baseurl=http://{{ip_and_port}}/Extra/qemu-kvm-ev/
+gpgcheck=0
+enabled=1

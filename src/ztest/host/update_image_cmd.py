@@ -20,11 +20,13 @@ class UpdateImageCmd(Cmd):
                 (['-t', '--tag'], {'help': 'the tag of image to be updated', 'dest': 'existing_image_tag', 'required': True}),
                 (['-n', '--new-tag'], {'help': 'the tag of new image', 'dest': 'new_tag', 'default': None}),
                 (['--dockerfile'], {'help': 'the path of dockerfile', 'dest': 'dockerfile', 'default': None}),
-                (['--ztest-pkg'], {'help': 'the path to ztest python package', 'dest': 'ztest_pkg', 'default': None}),
+                (['-z', '--ztest-pkg'], {'help': 'the path to ztest python package', 'dest': 'ztest_pkg', 'default': None}),
                 (['--test-source'], {'help': 'the path to the test source', 'dest': 'test_source', 'default': None}),
                 (['--pip'], {'help': 'pip install packages, multiple packages split by comma, e.g. --pip flask,cherryPy', 'dest': 'pip', 'default': None}),
                 (['--yum'], {'help': 'yum install packages, multiple packages split by comma, e.g. --yum gdb,gcc', 'dest': 'yum', 'default': None}),
-                (['--venv'], {'help': 'update venv environment', 'action': 'store_true', 'default': False})
+                (['--venv'], {'help': 'update venv environment', 'action': 'store_true', 'default': False}),
+                (['--run'], {'help': '[Support Multiple] run a single line command in the image, e.g. --run "echo hello > /root/greeting"', 'action': 'append', 'dest': 'run', 'default': None}),
+                (['--cp'], {'help': '[Support Multiple] copy files/directories into the image, e.g. --cp "path_to_a_file_on_the_host path_in_the_image"', 'action': 'append', 'dest': 'cp', 'default': None})
             ]
         )
 
@@ -36,6 +38,8 @@ class UpdateImageCmd(Cmd):
         self.pip = None
         self.update_venv = None
         self.yum = None
+        self.run_cmd = None
+        self.cp = None
 
     def _run(self, args, extra=None):
         self.existing_image_tag = args.existing_image_tag
@@ -46,6 +50,8 @@ class UpdateImageCmd(Cmd):
         self.pip = args.pip
         self.update_venv = args.venv
         self.yum = args.yum
+        self.run_cmd = args.run
+        self.cp = args.cp
 
         if self.new_tag is None:
             self.new_tag = self.existing_image_tag
@@ -53,10 +59,15 @@ class UpdateImageCmd(Cmd):
         if not docker.find_image(self.existing_image_tag):
             raise ZTestError('cannot find any image with tag[%s]' % self.existing_image_tag)
 
-        partial = any([self.ztest_pkg, self.test_source, self.pip, self.update_venv, self.yum])
+        partial = any([self.ztest_pkg, self.test_source, self.pip, self.update_venv, self.yum, self.run_cmd, self.cp])
 
         if self.dockerfile is None and not partial:
             raise ZTestError('you need to specify either --dockerfile or --ztest-pkg to update the image')
+
+        if self.cp:
+            for cp in self.cp:
+                if len(cp.split()) != 2:
+                    raise ZTestError('wrong option --cp %s, the format should be "source destination"' % cp)
 
         if partial:
             self._update_partial()
@@ -109,6 +120,15 @@ class UpdateImageCmd(Cmd):
 
         if self.update_venv:
             docker.bash_call_with_screen_output(container_id, 'zguest venv')
+
+        if self.run_cmd:
+            for cmd in self.run_cmd:
+                docker.bash_call_with_screen_output(container_id, cmd)
+
+        if self.cp:
+            for cp in self.cp:
+                src, dst = cp.split()
+                docker.cp_in(container_id, src, dst)
 
         docker.commit(container_id, self.new_tag)
         docker.kill_containers([container_id])

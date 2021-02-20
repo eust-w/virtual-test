@@ -7,6 +7,7 @@ DEFAULT_ETH_INTERFACE_NAME = env.env_var('ztest.case.defaultEthInterfaceName', s
 
 env_variables_for_test_case = [
     IMAGE_PATH,
+    DEFAULT_ETH_INTERFACE_NAME
 ]
 
 

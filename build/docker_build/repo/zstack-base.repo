@@ -1,0 +1,6 @@
+[zstack-base]
+name=CentOS-base-$releasever
+failovermethod=priority
+baseurl=http://{{ip_and_port}}/
+gpgcheck=0
+enabled=1

@@ -22,6 +22,7 @@ setup(name='ztest',
           "mock==3.0.5",
           "setuptools==44.1.1",
           "Jinja2==2.11.3",
+          "psutil==5.8.0"
       ],
       entry_points={
           'console_scripts': [

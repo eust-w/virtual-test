@@ -118,3 +118,9 @@ def run(options):
 
     return bash.call('docker run %s' % options).strip('\n\t\r ')
 
+
+def get_host_ip_of_docker_bridge():
+    # type: () -> str
+
+    return bash.call("ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+'").strip('\t\r\n ')
+
