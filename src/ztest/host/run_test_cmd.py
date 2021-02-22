@@ -18,17 +18,20 @@ VM_KERNEL = env.env_var('ztest.vm.kernel', str, 'ztest:kernel-4.19.125')
 
 
 class CasePath(object):
-    def __init__(self, case_path):
-        self.case_path = case_path
+    def __init__(self, case_expression):
+        # the param may like 'tests/my-directory/test_demo.py::TestClassName::test_specific_method'
+        # which contains methods to test
+        case_express = case_expression.split('::')
+        case_path = case_express[0]
 
-        if not os.path.isfile(self.case_path):
-            raise ZTestError('cannot find test case: %s' % self.case_path)
+        if not os.path.isfile(case_path):
+            raise ZTestError('cannot find test case: %s' % case_path)
 
-        ss = [s for s in self.case_path.split(os.sep) if s.strip(' \t\r')]
+        ss = [s for s in case_path.split(os.sep) if s.strip(' \t\r')]
         try:
             root_folder_index = ss.index(TEST_SOURCE_ROOT_FOLDER_NAME.value())
         except ValueError:
-            raise ZTestError('cannot find "%s" in path: %s' % (TEST_SOURCE_ROOT_FOLDER_NAME.value(), self.case_path))
+            raise ZTestError('cannot find "%s" in path: %s' % (TEST_SOURCE_ROOT_FOLDER_NAME.value(), case_path))
 
         if os.path.isabs(case_path):
             p = [os.sep]
@@ -43,7 +46,13 @@ class CasePath(object):
         ss = ss[root_folder_index:]
         project_name = ss[1]
 
-        self.case_path_in_vm = os.path.join(env.ZSTACK_UTILITY_SRC_IN_VM.value(), os.sep.join(ss[1:]))
+        self.case_expression_in_vm = os.path.join(env.ZSTACK_UTILITY_SRC_IN_VM.value(), os.sep.join(ss[1:]))
+        if len(case_express) > 1:
+            # there are :: expression, append them to the case_expression_in_vm
+            ss = [self.case_expression_in_vm]
+            ss.extend(case_express[1:])
+            self.case_expression_in_vm = '::'.join(ss)
+
         self.venv_path_in_vm = os.path.join(env.TEST_ENV_DIR_IN_VM.value(), project_name)
         self.zstacklib_path_in_vm = os.path.join(env.ZSTACK_UTILITY_SRC_IN_VM.value(), 'zstacklib')
         self.case_name = os.path.basename(case_path)
@@ -125,9 +134,9 @@ class RunTest(Cmd):
 
     def _run_test(self):
         if self.no_zstacklib:
-            cmd = 'zguest test --case %s --venv %s' % (self.case_path.case_path_in_vm, self.case_path.venv_path_in_vm)
+            cmd = 'zguest test --case %s --venv %s' % (self.case_path.case_expression_in_vm, self.case_path.venv_path_in_vm)
         else:
-            cmd = 'zguest test --case %s --venv %s --zstacklib %s' % (self.case_path.case_path_in_vm, self.case_path.venv_path_in_vm, self.case_path.zstacklib_path_in_vm)
+            cmd = 'zguest test --case %s --venv %s --zstacklib %s' % (self.case_path.case_expression_in_vm, self.case_path.venv_path_in_vm, self.case_path.zstacklib_path_in_vm)
 
         ignite.bash_call_with_screen_output(
             self.vm_id,

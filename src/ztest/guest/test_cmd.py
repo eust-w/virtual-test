@@ -21,19 +21,25 @@ class RunTestCmd(Cmd):
         self.zstacklib = None
         self.venv_activate = None
 
+    def _get_case_file_path(self, case_path):
+        # the param may like 'tests/my-directory/test_demo.py::TestClassName::test_specific_method'
+        # which contains methods to test
+        return case_path.split('::')[0]
+
     def _run(self, args, extra=None):
         if not os.path.isdir(args.venv):
             raise ZTestError('cannot find venv[%s]' % args.venv)
 
-        if not os.path.isfile(args.case):
-            raise ZTestError('cannot find case[%s]' % args.case)
+        case_path = self._get_case_file_path(args.case)
+        if not os.path.isfile(case_path):
+            raise ZTestError('cannot find case[%s]' % case_path)
 
         self.venv_activate = '%s/bin/activate' % args.venv
         self.zstacklib = args.zstacklib
 
         self._install_zstacklib()
         case_env.set_env_variables_for_test_case()
-        bash.call_with_screen_output('source %s && pytest %s -s && deactivate' % (self.venv_activate, args.case))
+        bash.call_with_screen_output('source %s && pytest -s -v %s && deactivate' % (self.venv_activate, args.case))
 
     def _install_zstacklib(self):
         if self.zstacklib is None:
