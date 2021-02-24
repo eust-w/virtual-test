@@ -3,9 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="725c7f94-9fc9-435b-a25a-bd7154696cbf" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/ceph_docker_build/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/build/ceph_docker_build/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/host/ignite.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/ignite.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/host/run_test_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/run_test_cmd.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,11 +33,12 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/build/ceph_docker_build" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/ztest/host" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Python" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/ztest/host" />
       <recent name="$PROJECT_DIR$/build/ceph_docker_build" />
       <recent name="$PROJECT_DIR$/build/docker_build/kvm" />
       <recent name="$PROJECT_DIR$" />
