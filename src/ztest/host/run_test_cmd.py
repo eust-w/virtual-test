@@ -70,7 +70,9 @@ class RunTest(Cmd):
                 (['--image'], {'help': 'image tag name, e.g. pyut:0.3', 'dest': 'image', 'default': None}),
                 (['-k', '--kernel'], {'help': 'kernel for ignite starting vm,, run "ignite kernel ls" to check', 'dest': 'kernel', 'default': None}),
                 (['-n', '--no-zstacklib'], {'help': 'not to update zstacklib when running the test', 'action': 'store_true', 'dest': 'no_zstacklib', 'default': False}),
-                (['-f', '--fail-on-existing-vm'], {'help': 'if there is an existing vm with the same name the case uses, fail fast', 'dest': 'fail_on_existing_vm', 'action': 'store_true', 'default': False})
+                (['-f', '--fail-on-existing-vm'], {'help': 'if there is an existing vm with the same name the case uses, fail fast', 'dest': 'fail_on_existing_vm', 'action': 'store_true', 'default': False}),
+                (['-ke', '--keep'], {'help': 'keep the vm after testing done', 'dest': 'keep', 'action': 'store_true', 'default': False}),
+                (['-lo', '--log-dir'], {'help': 'if set, the test log will be put in the dir', 'dest': 'log_dir', 'default': None})
             ]
         )
 
@@ -82,6 +84,8 @@ class RunTest(Cmd):
         self.fail_on_existing_vm = False
         self.no_zstacklib = False
         self.kernel = None
+        self.keep = None
+        self.log_dir = None
 
     def _run_vm(self):
         if not self.fail_on_existing_vm:
@@ -124,6 +128,12 @@ class RunTest(Cmd):
         self.fail_on_existing_vm = args.fail_on_existing_vm
         self.no_zstacklib = args.no_zstacklib
         self.kernel = args.kernel
+        self.keep = args.keep
+        self.log_dir = args.log_dir
+
+        if self.log_dir is not None and not os.path.isdir(self.log_dir):
+            os.makedirs(self.log_dir)
+
         if self.kernel is None:
             self.kernel = VM_KERNEL.value()
 
@@ -131,8 +141,19 @@ class RunTest(Cmd):
         self._wait_for_vm_sshd()
         self._sync_source()
         self._run_test()
+        self._cleanvm()
+
+    def _cleanvm(self):
+        if not self.keep:
+            ignite.kill_vms([self.vm_id])
+            ignite.rm_vms([self.vm_id])
+        else:
+            self.info('--keep is set, do not remove vm[%s, %s]' % (self.vm_id, self.vm_ip))
 
     def _run_test(self):
+        log_dir = self.log_dir if self.log_dir is not None else '.'
+        log_file_path = os.path.join(log_dir, '%s.log' % self.vm_name)
+
         if self.no_zstacklib:
             cmd = 'zguest test --case %s --venv %s' % (self.case_path.case_expression_in_vm, self.case_path.venv_path_in_vm)
         else:
@@ -141,6 +162,7 @@ class RunTest(Cmd):
         ignite.bash_call_with_screen_output(
             self.vm_id,
             cmd,
-            env.SSH_PRIV_KEY_FILE.value()
+            env.SSH_PRIV_KEY_FILE.value(),
+            log_file_path
         )
 

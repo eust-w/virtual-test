@@ -162,9 +162,12 @@ def import_image(tag):
     bash.call_with_screen_output('ignite --runtime docker image import %s' % tag)
 
 
-def bash_call_with_screen_output(vm_id, cmd, priv_key_path):
-    # type: (str, str, str) -> None
+def bash_call_with_screen_output(vm_id, cmd, priv_key_path, log_file=None):
+    # type: (str, str, str, str) -> None
 
-    cmd = "ignite exec %s '%s' -i %s" % (vm_id, cmd, priv_key_path)
+    if log_file is None:
+        cmd = "ignite exec %s '%s' -i %s" % (vm_id, cmd, priv_key_path)
+    else:
+        cmd = "set -o pipefail; ignite exec %s '%s' -i %s | tee %s" % (vm_id, cmd, priv_key_path, log_file)
     bash.call_with_screen_output(cmd)
 
