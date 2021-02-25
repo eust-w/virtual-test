@@ -14,12 +14,14 @@ class RunTestCmd(Cmd):
             args=[
                 (['--case'], {'help': 'path to the case file', 'dest': 'case', 'required': True}),
                 (['--venv'], {'help': 'path to the project venv', 'dest': 'venv', 'required': True}),
-                (['--zstacklib'], {'help': 'path to zstacklib source folder, if specified, zstacklib is installed automatically', 'dest': 'zstacklib', 'default': None})
+                (['--zstacklib'], {'help': 'path to zstacklib source folder, if specified, zstacklib is installed automatically', 'dest': 'zstacklib', 'default': None}),
+                (['--dry-run'], {'help': 'dry-run the cases to collect metedata', 'action': 'store_true', 'dest': 'dry_run', 'default': False})
             ]
         )
 
         self.zstacklib = None
         self.venv_activate = None
+        self.dry_run = False
 
     def _get_case_file_path(self, case_path):
         # the param may like 'tests/my-directory/test_demo.py::TestClassName::test_specific_method'
@@ -31,13 +33,16 @@ class RunTestCmd(Cmd):
             raise ZTestError('cannot find venv[%s]' % args.venv)
 
         case_path = self._get_case_file_path(args.case)
-        if not os.path.isfile(case_path):
+        if not os.path.exists(case_path):
             raise ZTestError('cannot find case[%s]' % case_path)
 
         self.venv_activate = '%s/bin/activate' % args.venv
         self.zstacklib = args.zstacklib
+        self.dry_run = args.dry_run
 
         self._install_zstacklib()
+        case_env.CASE_FILE_PATH.set(case_path)
+        case_env.DRY_RUN.set(self.dry_run)
         case_env.set_env_variables_for_test_case()
         bash.call_with_screen_output('source %s && pytest -s -v %s && deactivate' % (self.venv_activate, args.case))
 

@@ -24,7 +24,7 @@ class CasePath(object):
         case_express = case_expression.split('::')
         case_path = case_express[0]
 
-        if not os.path.isfile(case_path):
+        if not os.path.exists(case_path):
             raise ZTestError('cannot find test case: %s' % case_path)
 
         ss = [s for s in case_path.split(os.sep) if s.strip(' \t\r')]
@@ -57,6 +57,11 @@ class CasePath(object):
         self.zstacklib_path_in_vm = os.path.join(env.ZSTACK_UTILITY_SRC_IN_VM.value(), 'zstacklib')
         self.case_name = os.path.basename(case_path)
 
+        if os.path.isfile(case_path):
+            self.vm_name = os.path.splitext(case_path.case_name)[0].replace('_', '-')
+        else:
+            self.vm_name = self.case_expression_in_vm.replace('/', '-').strip('-')
+
 
 class RunTest(Cmd):
     def __init__(self):
@@ -72,7 +77,8 @@ class RunTest(Cmd):
                 (['-n', '--no-zstacklib'], {'help': 'not to update zstacklib when running the test', 'action': 'store_true', 'dest': 'no_zstacklib', 'default': False}),
                 (['-f', '--fail-on-existing-vm'], {'help': 'if there is an existing vm with the same name the case uses, fail fast', 'dest': 'fail_on_existing_vm', 'action': 'store_true', 'default': False}),
                 (['-ke', '--keep'], {'help': 'keep the vm after testing done', 'dest': 'keep', 'action': 'store_true', 'default': False}),
-                (['-lo', '--log-dir'], {'help': 'if set, the test log will be put in the dir', 'dest': 'log_dir', 'default': None})
+                (['-lo', '--log-dir'], {'help': 'if set, the test log will be put in the dir', 'dest': 'log_dir', 'default': None}),
+                (['-dr', '--dry-run'], {'help': 'dry-run the cases to collect metedata', 'action': 'store_true', 'dest': 'dry_run', 'default': False})
             ]
         )
 
@@ -86,6 +92,7 @@ class RunTest(Cmd):
         self.kernel = None
         self.keep = None
         self.log_dir = None
+        self.dry_run = False
 
     def _run_vm(self):
         if not self.fail_on_existing_vm:
@@ -124,12 +131,13 @@ class RunTest(Cmd):
         if self.image is None:
             self.image = config.CONFIG.conf.image_tag
 
-        self.vm_name = os.path.splitext(self.case_path.case_name)[0].replace('_', '-')
+        self.vm_name = self.case_path.vm_name
         self.fail_on_existing_vm = args.fail_on_existing_vm
         self.no_zstacklib = args.no_zstacklib
         self.kernel = args.kernel
         self.keep = args.keep
         self.log_dir = args.log_dir
+        self.dry_run = args.dry_run
 
         if self.log_dir is not None and not os.path.isdir(self.log_dir):
             os.makedirs(self.log_dir)
@@ -154,14 +162,15 @@ class RunTest(Cmd):
         log_dir = self.log_dir if self.log_dir is not None else '.'
         log_file_path = os.path.join(log_dir, '%s.log' % self.vm_name)
 
-        if self.no_zstacklib:
-            cmd = 'zguest test --case %s --venv %s' % (self.case_path.case_expression_in_vm, self.case_path.venv_path_in_vm)
-        else:
-            cmd = 'zguest test --case %s --venv %s --zstacklib %s' % (self.case_path.case_expression_in_vm, self.case_path.venv_path_in_vm, self.case_path.zstacklib_path_in_vm)
+        cmd_lst = ['zguest test --case %s --venv %s' % (self.case_path.case_expression_in_vm, self.case_path.venv_path_in_vm)]
+        if not self.no_zstacklib:
+            cmd_lst.append('--zstacklib %s' % self.case_path.zstacklib_path_in_vm)
+        if self.dry_run:
+            cmd_lst.append('--dry-run')
 
         ignite.bash_call_with_screen_output(
             self.vm_id,
-            cmd,
+            ' '.join(cmd_lst),
             env.SSH_PRIV_KEY_FILE.value(),
             log_file_path
         )

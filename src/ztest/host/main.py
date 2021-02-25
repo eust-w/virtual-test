@@ -1,19 +1,21 @@
 from ztest import cli
-import run_test_cmd
+import test_cmd
 import cleanup_cmd
 import init_cmd
 import build_image_cmd
 import update_image_cmd
+import coverage_cmd
 
 from utils import bash, misc
 import psutil
 
 commands = [
     init_cmd.InitCmd(),
-    run_test_cmd.RunTest(),
+    test_cmd.RunTest(),
     cleanup_cmd.CleanupCmd(),
     build_image_cmd.BuildImageCmd(),
-    update_image_cmd.UpdateImageCmd()
+    update_image_cmd.UpdateImageCmd(),
+    coverage_cmd.CoverageCmd()
 ]
 
 
