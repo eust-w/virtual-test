@@ -27,8 +27,8 @@ def list_all_vm_ids(include_stopped=False):
     return ids
 
 
-def list_all_vm_ids_and_names(include_stopped=False):
-    # type: (bool) -> list[(str, str)]
+def list_all_vm_ids_names_states(include_stopped=False):
+    # type: (bool) -> list[(str, str, str)]
 
     if include_stopped:
         o = bash.call('ignite ps -a')
@@ -47,7 +47,7 @@ def list_all_vm_ids_and_names(include_stopped=False):
     id_names = []
     for vm in vms:
         ss = vm.split('\t')
-        id_names.append((ss[0], ss[-1]))
+        id_names.append((ss[0], ss[-1], ss[-4]))
 
     return id_names
 
@@ -136,7 +136,7 @@ def run_vm(image, vm_name, kernel=None):
     else:
         bash.call_with_screen_output('ignite run %s --name %s --ssh=%s -k %s' % (image, vm_name, env.SSH_PUB_KEY_FILE.value(), kernel))
 
-    for id, name in list_all_vm_ids_and_names():
+    for id, name, _ in list_all_vm_ids_names_states():
         if vm_name == name:
             return id
 
@@ -162,7 +162,7 @@ def import_image(tag):
     bash.call_with_screen_output('ignite --runtime docker image import %s' % tag)
 
 
-def bash_call_with_screen_output(vm_id, cmd, priv_key_path, log_file=None):
+def bash_call_with_screen_output(vm_id, cmd, priv_key_path=env.SSH_PRIV_KEY_FILE.value(), log_file=None):
     # type: (str, str, str, str) -> None
 
     if log_file is None:
@@ -170,4 +170,8 @@ def bash_call_with_screen_output(vm_id, cmd, priv_key_path, log_file=None):
     else:
         cmd = "set -o pipefail; ignite exec %s '%s' -i %s | tee %s" % (vm_id, cmd, priv_key_path, log_file)
     bash.call_with_screen_output(cmd)
+
+
+def cp(src, dst, pri_key=env.SSH_PRIV_KEY_FILE.value()):
+    bash.call_with_screen_output('ignite cp %s %s -i %s' % (src, dst, pri_key))
 

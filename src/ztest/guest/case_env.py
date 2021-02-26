@@ -19,6 +19,7 @@ env_variables_for_test_case = [
     env.ZSTACK_UTILITY_SRC_IN_VM,
     CASE_FILE_PATH,
     DRY_RUN,
+    env.TEST_FOR_OUTPUT_DIR,
 ]
 
 

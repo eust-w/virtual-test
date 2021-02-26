@@ -42,6 +42,7 @@ SSH_PRIV_KEY_FILE = env_var('ztest.ssh.privatekey', str, os.path.join(CONF_DIR.v
 SSH_PUB_KEY_FILE = env_var('ztest.ssh.privatekey', str, os.path.join(CONF_DIR.value(), 'ssh/id_rsa.pub'))
 TEST_ENV_DIR_IN_VM = env_var('ztest.vm.testVenvDir', str, '/root/test-venv')
 ZSTACK_UTILITY_SRC_IN_VM = env_var('ztest.vm.zstackUtilityDir', str, '/root/zstack-utility')
+TEST_FOR_OUTPUT_DIR = env_var('ztest.case.testForDir', str, default='/root/ztest-test-for')
 
 if not os.path.isdir(CONF_DIR.value()):
     os.makedirs(CONF_DIR.value())

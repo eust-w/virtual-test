@@ -63,6 +63,51 @@ class CasePath(object):
             self.vm_name = self.case_expression_in_vm.replace('/', '-').strip('-')
 
 
+@retry(time_out=WAIT_FOR_VM_SSD_TIMEOUT.value(), check_interval=WAIT_FOR_VM_SSD_CHECK_INTERVAL.value())
+def wait_for_vm_sshd(vm_id, vm_ip):
+    # type: (str, str) -> None
+
+    Cmd.info('wait for VM[%s, %s] ssh start ...' % (vm_id, vm_ip))
+
+    r, o, e = bash.run('ssh -i %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@%s "echo 1"' %
+                       (env.SSH_PRIV_KEY_FILE.value(), vm_ip))
+
+    if r != 0:
+        raise ZTestError('unable to ssh into root@%s, %s' % (vm_ip, e))
+
+
+def run_vm(vm_name, image=config.CONFIG.conf.image_tag, kernel=VM_KERNEL.value(), fail_on_existing_vm=True):
+    # type: (str, str, str, bool) -> (str, str)
+
+    if not fail_on_existing_vm:
+        for vm_id, vm_name, state in ignite.list_all_vm_ids_names_states(include_stopped=True):
+            if vm_name == vm_name:
+                if state != 'Stopped':
+                    ignite.kill_vms([vm_id])
+
+                ignite.rm_vms([vm_id])
+
+    vm_id = ignite.run_vm(image, vm_name, kernel)
+    vm_ip = ignite.get_vm_first_ip(vm_id)
+
+    return vm_id, vm_ip
+
+
+def sync_source(vm_ip, source_root):
+    ignored = build_image_cmd.DOCKER_IMAGE_TEST_SOURCE_EXCLUDED.value().split(',')
+    ignored = ['--exclude "%s"' % i.strip() for i in ignored]
+    if ignored:
+        bash.call_with_screen_output(
+            'rsync -avz %s -e "ssh -i %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --delete --progress %s root@%s:%s' %
+            (' '.join(ignored), env.SSH_PRIV_KEY_FILE.value(), source_root, vm_ip,
+             env.SOURCE_PARENT_DIR_IN_VM.value()))
+    else:
+        bash.call_with_screen_output(
+            'rsync -avz -e "ssh -i %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --delete --progress %s root@%s:%s' %
+            (
+            env.SSH_PRIV_KEY_FILE.value(), source_root, vm_ip, env.SOURCE_PARENT_DIR_IN_VM.value()))
+
+
 class RunTest(Cmd):
     def __init__(self):
         super(RunTest, self).__init__(
@@ -95,34 +140,13 @@ class RunTest(Cmd):
         self.dry_run = False
 
     def _run_vm(self):
-        if not self.fail_on_existing_vm:
-            for vm_id, vm_name in ignite.list_all_vm_ids_and_names(include_stopped=True):
-                if vm_name == self.vm_name:
-                    ignite.kill_vms([vm_id])
-                    ignite.rm_vms([vm_id])
-
-        self.vm_id = ignite.run_vm(self.image, self.vm_name, self.kernel)
-        self.vm_ip = ignite.get_vm_first_ip(self.vm_id)
+        self.vm_id, self.vm_ip = run_vm(self.vm_name, kernel=self.kernel, image=self.image, fail_on_existing_vm=self.fail_on_existing_vm)
 
     def _sync_source(self):
-        ignored = build_image_cmd.DOCKER_IMAGE_TEST_SOURCE_EXCLUDED.value().split(',')
-        ignored = ['--exclude "%s"' % i.strip() for i in ignored]
-        if ignored:
-            bash.call_with_screen_output(
-                'rsync -avz %s -e "ssh -i %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --delete --progress %s root@%s:%s' %
-                (' '.join(ignored), env.SSH_PRIV_KEY_FILE.value(), self.case_path.source_root, self.vm_ip, env.SOURCE_PARENT_DIR_IN_VM.value()))
-        else:
-            bash.call_with_screen_output('rsync -avz -e "ssh -i %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --delete --progress %s root@%s:%s' %
-                (env.SSH_PRIV_KEY_FILE.value(), self.case_path.source_root, self.vm_ip, env.SOURCE_PARENT_DIR_IN_VM.value()))
+        sync_source(self.vm_ip, self.case_path.source_root)
 
-    @retry(time_out=WAIT_FOR_VM_SSD_TIMEOUT.value(), check_interval=WAIT_FOR_VM_SSD_CHECK_INTERVAL.value())
     def _wait_for_vm_sshd(self):
-        self.info('wait for VM[%s, %s] ssh start ...' % (self.vm_id, self.vm_ip))
-
-        r, o, e = bash.run('ssh -i %s -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@%s "echo 1"' % (env.SSH_PRIV_KEY_FILE.value(), self.vm_ip))
-
-        if r != 0:
-            raise ZTestError('unable to ssh into root@%s, %s' % (self.vm_ip, e))
+        wait_for_vm_sshd(self.vm_id, self.vm_ip)
 
     def _run(self, args, extra=None):
         self.case_path = CasePath(args.case_path)

@@ -80,15 +80,14 @@ class BuildImageCmd(Cmd):
     def _cleanup_old_docker_image(self):
         docker.rm_old_docker_image(self.tag)
 
-    def _start_yum_http_server(self, ip, iso_dir):
-        def cleanup():
-            for p in psutil.process_iter():
-                cmdline = p.cmdline()
-                if 'python' in cmdline and 'SimpleHTTPServer' in cmdline:
-                    bash.call_with_screen_output('kill -9 %s' % p.pid)
-                    break
+    def _cleanup_yum_http_server(self):
+        for p in psutil.process_iter():
+            cmdline = p.cmdline()
+            if 'python' in cmdline and 'SimpleHTTPServer' in cmdline:
+                bash.call_with_screen_output('kill -9 %s' % p.pid)
 
-        cleanup()
+    def _start_yum_http_server(self, ip, iso_dir):
+        self._cleanup_yum_http_server()
 
         bash.call_with_screen_output('python -m SimpleHTTPServer &', work_dir=iso_dir)
 
@@ -100,12 +99,13 @@ class BuildImageCmd(Cmd):
 
         wait_for_yum_server_start()
 
-        return cleanup
+        return self._cleanup_yum_http_server
 
     def _setup_yum_server_and_prepare_repo(self, build_root):
         iso_dir = os.path.abspath('tmp-zstack-iso')
 
         if os.path.isdir(iso_dir):
+            self._cleanup_yum_http_server()
             # try umount the iso_dir, ignore any error
             bash.call_with_screen_output('umount %s' % iso_dir, raise_error=False)
         else:

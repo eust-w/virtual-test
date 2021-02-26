@@ -5,6 +5,17 @@ import case_env
 import os.path
 
 
+def install_zstacklib(venv_activate, path):
+    if not os.path.isdir(path):
+        raise ZTestError('cannot find zstacklib folder: %s' % path)
+
+    install_sh = os.path.join(path, 'install.sh')
+    if not os.path.isfile(install_sh):
+        raise ZTestError('cannot find install.sh in %s' % path)
+
+    bash.call_with_screen_output('source %s && bash %s && deactivate' % (venv_activate, install_sh))
+
+
 class RunTestCmd(Cmd):
     def __init__(self):
         super(RunTestCmd, self).__init__(
@@ -50,11 +61,5 @@ class RunTestCmd(Cmd):
         if self.zstacklib is None:
             return
 
-        if not os.path.isdir(self.zstacklib):
-            raise ZTestError('cannot find zstacklib folder: %s' % self.zstacklib)
+        install_zstacklib(self.venv_activate, self.zstacklib)
 
-        install_sh = os.path.join(self.zstacklib, 'install.sh')
-        if not os.path.isfile(install_sh):
-            raise ZTestError('cannot find install.sh in %s' % self.zstacklib)
-
-        bash.call_with_screen_output('source %s && bash %s && deactivate' % (self.venv_activate, install_sh))

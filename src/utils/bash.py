@@ -2,6 +2,8 @@ import os
 import subprocess
 import sys
 
+import typing
+
 from error import ZTestError
 
 
@@ -56,8 +58,8 @@ def call(command, success_code=0, work_dir=None):
     return o
 
 
-def call_with_screen_output(cmd, raise_error=True, work_dir=None):
-    # type: (str, bool, str) -> None
+def call_with_screen_output(cmd, ret_code=0, raise_error=True, work_dir=None):
+    # type: (str, typing.Union[int, list], bool, str) -> None
 
     if work_dir is None:
         print('[BASH]: %s' % cmd)
@@ -69,8 +71,15 @@ def call_with_screen_output(cmd, raise_error=True, work_dir=None):
                          cwd=work_dir,
                          close_fds=True)
     r = p.wait()
-    if r != 0 and raise_error:
-        raise BashError(msg='command[%s] failed' % cmd, cmd=cmd, retcode=r, stdout='', stderr='')
+    if raise_error:
+        is_err = False
+        if isinstance(ret_code, int) and ret_code != r:
+            is_err = True
+        elif isinstance(ret_code, list) and r not in ret_code:
+            is_err = True
+
+        if is_err:
+            raise BashError(msg='command[%s] failed' % cmd, cmd=cmd, retcode=r, stdout='', stderr='')
 
 
 def run_with_command_check(command, work_dir=None):
