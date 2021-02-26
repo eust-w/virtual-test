@@ -26,7 +26,8 @@ _excluded_source_dirs = [
     'zstackbuild',
     'zstackcli',
     'zstackctl',
-    'bm-instance-agent'
+    'bm-instance-agent',
+    '*.pyc'
 ]
 
 DOCKER_IMAGE_TEST_SOURCE_EXCLUDED = env.env_var('ztest.docker.baseImage.testSourceExcluded', str, ','.join(_excluded_source_dirs))

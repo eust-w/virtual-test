@@ -102,18 +102,33 @@ class DynamicDict(dict):
     def from_dict(schema_dict):
         assert schema_dict is not None, 'schema_dict cannot be null'
 
-        def construct(target, source):
+        def construct_list(lst):
+            ret_list = []
+
+            for item in lst:
+                if isinstance(item, dict):
+                    ret_list.append(construct_dict(item))
+                elif isinstance(item, list):
+                    ret_list.append(construct_list(item))
+                else:
+                    ret_list.append(item)
+
+            return ret_list
+
+        def construct_dict(source):
+            target = DynamicDict()
+
             for key, value in source.items():
-                if not isinstance(value, dict):
+                if isinstance(value, list):
+                    target[key] = construct_list(value)
+                elif isinstance(value, dict):
+                    target[key] = construct_dict(value)
+                else:
                     target[key] = value
-                    continue
 
-                target[key] = DynamicDict()
-                construct(target[key], value)
+            return target
 
-        ret = DynamicDict()
-        construct(ret, schema_dict)
-        return ret
+        return construct_dict(schema_dict)
 
     @staticmethod
     def from_json(jstr):

@@ -1,5 +1,9 @@
 from ztest import env
 import os
+from utils import logging
+
+
+logger = logging.get_logger(__name__)
 
 TEST_ROOT = env.env_var('ztest.case.testRoot', str, '/root/test_root')
 IMAGE_PATH = env.env_var('ztest.case.imagePath', str, os.path.join(TEST_ROOT.value(), 'images/zstack-image-1.4.qcow2'))
@@ -26,4 +30,5 @@ env_variables_for_test_case = [
 def set_env_variables_for_test_case():
     for e in env_variables_for_test_case:
         e.set(e.value())
+        logger.debug('set case environment variable: %s=%s' % (e.name, e.value()))
 
