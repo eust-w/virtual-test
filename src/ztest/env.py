@@ -1,6 +1,11 @@
 from utils.error import ZTestError
 import typing
 import os
+import threading
+
+
+_local = threading.local()
+_local.vm_env = {}
 
 
 class EnvVariable(object):
@@ -47,3 +52,26 @@ TEST_FOR_OUTPUT_DIR = env_var('ztest.case.testForDir', str, default='/root/ztest
 if not os.path.isdir(CONF_DIR.value()):
     os.makedirs(CONF_DIR.value())
 
+
+def set_vm_env_var(key, value):
+    # type: (str, object) -> None
+
+    _local.vm_env[key] = str(value)
+
+
+def set_vm_env_vars(env_vars):
+    # type: (dict) -> None
+
+    _local.vm_env.update(env_vars)
+
+
+def get_vm_env_vars():
+    return _local.vm_env
+
+
+env_file_path_in_vm = '/root/env_vars.json'
+
+
+def set_ssh_private_key_to_vm_env_vars():
+    with open(SSH_PRIV_KEY_FILE.value(), 'r') as fd:
+        set_vm_env_var('ztest.vm.ssh.privKeyText', fd.read())

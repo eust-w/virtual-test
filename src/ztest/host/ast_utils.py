@@ -49,7 +49,7 @@ class ParseEnvSetup(object):
     def parse(self):
         node = self._find_env_setup_assign()
         if node is None:
-            return
+            return None
 
         code = astunparse.unparse(node)
         context = {}
@@ -59,7 +59,7 @@ class ParseEnvSetup(object):
 
 
 def parse_env_setup(case_file_path):
-    # type: (str) -> None
+    # type: (str) -> typing.Union[None, dict]
 
     return ParseEnvSetup(case_file_path).parse()
 

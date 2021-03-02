@@ -69,6 +69,7 @@ def call_with_screen_output(cmd, ret_code=0, raise_error=True, work_dir=None):
     p = subprocess.Popen(cmd, shell=True, stdout=sys.stdout,
                          stdin=subprocess.PIPE, stderr=sys.stderr,
                          cwd=work_dir,
+                         env=os.environ,
                          close_fds=True)
     r = p.wait()
     if raise_error:

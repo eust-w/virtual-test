@@ -1,5 +1,6 @@
 import os
 
+import ztest.host.vm_utils
 from ztest.core import Cmd
 from utils.error import ZTestError
 from utils import json
@@ -77,11 +78,11 @@ class CoverageCmd(Cmd):
         for src in src_files:
             results.update(ast_utils.collect_agent_handler_in_file(src))
 
-        vm_id, vm_ip = test_cmd.run_vm('dry-run', fail_on_existing_vm=False)
-        test_cmd.wait_for_vm_sshd(vm_id, vm_ip)
+        vm_id, vm_ip = ztest.host.vm_utils.run_vm('dry-run', fail_on_existing_vm=False)
+        ztest.host.vm_utils.wait_for_vm_sshd(vm_id, vm_ip)
 
         case_path = test_cmd.CasePath(self.src)
-        test_cmd.sync_source(vm_ip, case_path.source_root)
+        ztest.host.vm_utils.sync_source(vm_ip, case_path.source_root)
 
         tmp_dir = tempfile.mkdtemp()
         ignite.bash_call_with_screen_output(vm_id, 'zguest dry-run-all')

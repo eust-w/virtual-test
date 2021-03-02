@@ -128,13 +128,20 @@ def get_vm_first_ip(vm_id):
     return get_vm_ips(vm_id)[0]
 
 
-def run_vm(image, vm_name, kernel=None):
-    # type: (str, str) -> str
+def run_vm(image, vm_name, kernel=None, memory=None, cpu=None, disk=None):
+    # type: (str, str, str, str, int, str) -> str
 
-    if kernel is None:
-        bash.call_with_screen_output('ignite run %s --name %s --ssh=%s' % (image, vm_name, env.SSH_PUB_KEY_FILE.value()))
-    else:
-        bash.call_with_screen_output('ignite run %s --name %s --ssh=%s -k %s' % (image, vm_name, env.SSH_PUB_KEY_FILE.value(), kernel))
+    cmd = ['ignite run %s --name %s --ssh=%s' % (image, vm_name, env.SSH_PUB_KEY_FILE.value())]
+    if kernel is not None:
+        cmd.append('-k %s' % kernel)
+    if memory is not None:
+        cmd.append('--memory %s' % memory)
+    if cpu is not None:
+        cmd.append('--cpus %s' % cpu)
+    if disk is not None:
+        cmd.append('--size %s' % disk)
+
+    bash.call_with_screen_output(' '.join(cmd))
 
     for id, name, _ in list_all_vm_ids_names_states():
         if vm_name == name:
@@ -174,4 +181,15 @@ def bash_call_with_screen_output(vm_id, cmd, priv_key_path=env.SSH_PRIV_KEY_FILE
 
 def cp(src, dst, pri_key=env.SSH_PRIV_KEY_FILE.value()):
     bash.call_with_screen_output('ignite cp %s %s -i %s' % (src, dst, pri_key))
+
+
+def cleanup_vm_by_name(vm_name):
+    # type: (str) -> None
+
+    for vm_id, name, state in list_all_vm_ids_names_states(include_stopped=True):
+        if name == vm_name:
+            if state != 'Stopped':
+                kill_vms([vm_id])
+
+            rm_vms([vm_id])
 
