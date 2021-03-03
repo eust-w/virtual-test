@@ -23,6 +23,7 @@ RUN mkdir -p /root/test_root/images
 COPY zstack-image-1.4.qcow2 /root/test_root/images
 COPY kvm/libvirtd.conf /etc/libvirt
 COPY kvm/qemu.conf /etc/libvirt
+COPY kvm/libvirtd /etc/sysconfig/
 
 COPY pip-20.3.4.tar.gz /root
 RUN easy_install /root/pip-20.3.4.tar.gz

@@ -3,14 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="725c7f94-9fc9-435b-a25a-bd7154696cbf" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/utils/bash.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/utils/bash.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/env.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/env.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/guest/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/guest/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/host/ast_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/ast_utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/host/coverage_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/coverage_cmd.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/host/ignite.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/ignite.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/host/init_cmd.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/host/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/docker_build/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/build/docker_build/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ztest/host/test_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/test_cmd.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -42,15 +35,15 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/utils" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/build/docker_build/kvm" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Python" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/build/docker_build/kvm" />
       <recent name="$PROJECT_DIR$/src/utils" />
       <recent name="$PROJECT_DIR$/src/ztest/host" />
       <recent name="$PROJECT_DIR$/build/ceph_docker_build" />
-      <recent name="$PROJECT_DIR$/build/docker_build/kvm" />
       <recent name="$PROJECT_DIR$" />
     </key>
     <key name="MoveFile.RECENT_KEYS">

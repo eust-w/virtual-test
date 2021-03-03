@@ -6,7 +6,7 @@ from ztest import env
 from ztest.core import Cmd
 from ztest import config
 from ztest.host.vm_utils import run_vm, wait_for_vm_sshd, sync_source, VM_KERNEL
-from utils import defer
+from utils import defer, json
 import setup_utils
 import vm_utils
 
@@ -145,6 +145,11 @@ class RunTest(Cmd):
             self.info('--keep is set, do not remove vm[%s, %s]' % (self.vm_id, self.vm_ip))
 
     def _set_vm_env_vars(self):
+        test_env_metadata = {
+            'ip': self.vm_id,
+        }
+
+        env.set_vm_env_var('ztest.envMetadata', json.dumps(test_env_metadata))
         env.set_ssh_private_key_to_vm_env_vars()
         vm_utils.create_env_var_file_in_vm(self.vm_id)
 
