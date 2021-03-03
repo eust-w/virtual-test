@@ -1,9 +1,12 @@
-from ztest import cli
+import os
+
+from ztest import cli, env
 import test_cmd
 import cleanup_cmd
 import build_image_cmd
 import update_image_cmd
 import coverage_cmd
+import ssh_keys
 
 from utils import bash, misc
 import psutil
@@ -36,7 +39,28 @@ def start_ignited_if_not():
         wait_for_start()
 
 
+def create_ssh_key_if_not_exists():
+    if not os.path.isfile(env.SSH_PRIV_KEY_FILE.value()):
+        d = os.path.dirname(env.SSH_PRIV_KEY_FILE.value())
+        if not os.path.isdir(d):
+            os.makedirs(d)
+
+        with open(env.SSH_PRIV_KEY_FILE.value(), 'w+') as fd:
+            fd.write(ssh_keys.private_key)
+
+        os.chmod(env.SSH_PRIV_KEY_FILE.value(), 0600)
+
+    if not os.path.isfile(env.SSH_PUB_KEY_FILE.value()):
+        d = os.path.dirname(env.SSH_PUB_KEY_FILE.value())
+        if not os.path.isdir(d):
+            os.makedirs(d)
+
+        with open(env.SSH_PUB_KEY_FILE.value(), 'w+') as fd:
+            fd.write(ssh_keys.pub_key)
+
+
 def main():
+    create_ssh_key_if_not_exists()
     start_ignited_if_not()
     cli.run_command(commands)
 
