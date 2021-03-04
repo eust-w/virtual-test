@@ -28,7 +28,8 @@ setup(name='ztest',
       entry_points={
           'console_scripts': [
               'zguest = ztest.guest.main:main',
-              'ztest = ztest.host.main:main'
+              'ztest = ztest.host.main:main',
+              'install-ztest = ztest.installer.install:install'
           ]
       }
       )

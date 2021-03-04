@@ -3,7 +3,7 @@ FROM centos:centos7.6.1810
 ######### Basic System Install #########
 COPY repo/* /etc/yum.repos.d/
 RUN yum --disablerepo=* --enablerepo=zstack-base,zstack-kvm -y install openssh-server passwd rsync iproute \
-    python-virtualenv git libvirt libvirt-devel libvirt-python gcc gdb qemu-kvm net-tools
+    python-virtualenv git libvirt libvirt-devel libvirt-python gcc gdb qemu-kvm net-tools wget
 RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 
 RUN echo 'password' | passwd --stdin root

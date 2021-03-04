@@ -3,7 +3,7 @@ FROM centos:centos7.6.1810
 ######### Basic System Install #########
 COPY epel-release-latest-7.noarch.rpm /root
 RUN yum -y install /root/epel-release-latest-7.noarch.rpm
-RUN yum -y install openssh-server qemu-kvm systemd python-setuptools openssh-clients expect
+RUN yum -y install openssh-server qemu-kvm systemd python-setuptools openssh-clients expect wget
 RUN ln -snf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo "Asia/Shanghai" > /etc/timezone
 
 RUN echo 'password' | passwd --stdin root
