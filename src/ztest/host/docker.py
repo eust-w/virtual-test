@@ -124,3 +124,32 @@ def get_host_ip_of_docker_bridge():
 
     return bash.call("ip -4 addr show docker0 | grep -Po 'inet \K[\d.]+'").strip('\t\r\n ')
 
+
+def import_image(path):
+    # type: (str) -> json.DynamicDict
+
+    old_image_list = list_images()
+    bash.call_with_screen_output('docker load --input %s' % path)
+    new_image_list = list_images()
+
+    def in_old(image):
+        for i in old_image_list:
+            if i.ID == image.ID:
+                return True
+
+        return False
+
+    for img in new_image_list:
+        if in_old(img):
+            continue
+        else:
+            return img
+
+    raise ValueError('cannot find image[%s] imported, run "docker image ls" to check')
+
+
+def export_image(tag, path):
+    # type: (str, str) -> None
+
+    bash.call_with_screen_output('docker save %s > %s' % (tag, path))
+

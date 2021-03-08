@@ -92,7 +92,7 @@ class X64Installer(Installer):
     IGNITE_TAR = os.path.join(TOOLS_DIR, 'ignite-x64.tar.gz')
 
     def install_dependencies(self):
-        bash.call_with_screen_output('yum install -y e2fsprogs openssh-clients yum-utils')
+        bash.call_with_screen_output('yum install -y e2fsprogs openssh-clients yum-utils git')
         bash.call_with_screen_output('which containerd || ( yum-config-manager --add-repo %s && yum install -y containerd.io )' % DOCKER_REPO)
         bash.call_with_screen_output('yum -y install docker-ce')
 

@@ -6,7 +6,9 @@ import cleanup_cmd
 import build_image_cmd
 import update_image_cmd
 import coverage_cmd
+import import_image_cmd
 import ssh_keys
+import export_image_cmd
 
 from utils import bash, misc
 import psutil
@@ -16,7 +18,9 @@ commands = [
     cleanup_cmd.CleanupCmd(),
     build_image_cmd.BuildImageCmd(),
     update_image_cmd.UpdateImageCmd(),
-    coverage_cmd.CoverageCmd()
+    coverage_cmd.CoverageCmd(),
+    import_image_cmd.ImportImageCmd(),
+    export_image_cmd.ExportImageCmd()
 ]
 
 
