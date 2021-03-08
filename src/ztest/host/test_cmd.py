@@ -1,14 +1,14 @@
 import os.path
 
 import ignite
-from utils.error import ZTestError
-from ztest import env
-from ztest.core import Cmd
-from ztest import config
-from ztest.host.vm_utils import run_vm, wait_for_vm_sshd, sync_source, VM_KERNEL
-from utils import defer, json
 import setup_utils
 import vm_utils
+from utils import defer, json
+from utils.error import ZTestError
+from ztest import config
+from ztest import env
+from ztest.core import Cmd
+from ztest.host.vm_utils import run_vm, wait_for_vm_sshd, sync_source
 
 SOURCE_DIR = env.env_var('ztest.source.dir', str, None)
 TEST_IMAGE_TAG = env.env_var('ztest.image.tag', str, 'pyut:0.3')
@@ -128,7 +128,7 @@ class RunTest(Cmd):
             os.makedirs(self.log_dir)
 
         if self.kernel is None:
-            self.kernel = VM_KERNEL.value()
+            self.kernel = config.CONFIG.conf.kernel_tag
 
         self._run_setup()
         self._run_vm()

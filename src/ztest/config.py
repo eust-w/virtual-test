@@ -23,6 +23,10 @@ class Config(object):
         self.conf.image_tag = tag
         self.save()
 
+    def set_kernel_tag(self, tag):
+        self.conf.kernel_tag = tag
+        self.save()
+
 
 CONFIG = Config()  # type: Config
 

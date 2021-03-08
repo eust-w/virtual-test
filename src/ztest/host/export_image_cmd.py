@@ -22,19 +22,22 @@ class ExportImageCmd(Cmd):
         self.tag = args.tag
         self.output = args.output
 
+        def make_image_filename(the_img):
+            return ('%s_%s.tar.gz' % (the_img.Repository, the_img.Tag)).replace(':', '_').replace('/', '_')
+
         img = docker.find_image(self.tag)
         if img is None:
             raise ZTestError('cannot find image with tag[%s]' % self.tag)
 
         if self.output is None:
-            output_path = ('%s_%s.tar.gz' % (img.Repository, img.Tag)).replace(':', '_')
+            output_path = make_image_filename(img)
         else:
             if self.output.endswith('tar.gz'):
                 dir_name = os.path.dirname(self.output)
                 file_name = os.path.basename(self.output)
             else:
                 dir_name = self.output
-                file_name = ('%s_%s.tar.gz' % (img.Repository, img.Tag)).replace(':', '_')
+                file_name = make_image_filename(img)
 
             if not os.path.isdir(dir_name):
                 os.makedirs(dir_name)

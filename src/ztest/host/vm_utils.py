@@ -7,10 +7,8 @@ from ztest.host import ignite, build_image_cmd
 import tempfile
 import json
 
-VM_KERNEL = env.env_var('ztest.vm.kernel', str, 'ztest:kernel-4.19.125')
 
-
-def run_vm(vm_name, image=config.CONFIG.conf.image_tag, kernel=VM_KERNEL.value(), fail_on_existing_vm=True):
+def run_vm(vm_name, image=config.CONFIG.conf.image_tag, kernel=config.CONFIG.conf.kernel_tag, fail_on_existing_vm=True):
     # type: (str, str, str, bool) -> (str, str)
 
     if not fail_on_existing_vm:

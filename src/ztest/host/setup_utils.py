@@ -19,7 +19,7 @@ class VmSetup(object):
     def setup(self):
         vm_name = self.vm_info.name
         image = self.vm_info.image if self.vm_info.image is not None else config.CONFIG.conf.image_tag
-        kernel = self.vm_info.kernel if self.vm_info.kernel is not None else vm_utils.VM_KERNEL.value()
+        kernel = self.vm_info.kernel if self.vm_info.kernel is not None else config.CONFIG.conf.kernel_tag
         cpu = self.vm_info.cpu
         memory = self.vm_info.memory
         disk = self.vm_info.disk

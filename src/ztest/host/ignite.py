@@ -73,6 +73,20 @@ def list_all_image_ids():
     return ids
 
 
+def list_all_kernel_ids():
+    # type: () -> list[str]
+
+    o = bash.call('ignite kernel ls')
+    images = [i for i in o.split('\n') if i.strip('\t\r ')]
+    if len(images) == 1:
+        images = []
+    else:
+        images = images[1:]
+
+    ids = [i.split('\t')[0] for i in images]
+    return ids
+
+
 def find_image(tag):
     # type: (str) -> json.DynamicDict
     for i in list_all_images():
@@ -86,6 +100,32 @@ def rm_image(image_id):
     # type: (str) -> None
 
     bash.call_with_screen_output('ignite image rm %s' % image_id)
+
+
+def get_kernel(kernel_id):
+    # type: (str) -> json.DynamicDict
+    o = bash.call('ignite inspect kernel %s' % kernel_id)
+    return json.loads(o)
+
+
+def find_kernel(tag):
+    # type: (str) -> json.DynamicDict
+
+    for k in list_all_kernels():
+        if tag == k.spec.oci:
+            return k
+
+    return None
+
+
+def list_all_kernels():
+    # type: () -> list[json.DynamicDict]
+
+    kernels = []
+    for k in list_all_kernel_ids():
+        kernels.append(get_kernel(k))
+
+    return kernels
 
 
 def list_all_images():
