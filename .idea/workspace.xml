@@ -4,10 +4,14 @@
     <list default="true" id="725c7f94-9fc9-435b-a25a-bd7154696cbf" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ztest/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/host/docker.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/docker.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/host/ignite.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/ignite.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/host/init_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/init_cmd.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ztest/host/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ztest/env.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/env.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ztest/guest/case_env.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/guest/case_env.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ztest/host/build_image_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/build_image_cmd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ztest/host/cleanup_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/cleanup_cmd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ztest/host/setup_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/setup_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ztest/host/test_cmd.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/test_cmd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ztest/host/vm_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/ztest/host/vm_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ztest/prepare_image.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

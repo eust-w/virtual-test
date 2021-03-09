@@ -3,7 +3,7 @@ import os
 from utils import json
 from ztest import env
 
-CONFIG_FILE = env.env_var('ztest.conf.configFile', str, os.path.join(env.CONF_DIR.value(), 'config.json'))
+CONFIG_FILE = env.env_var('ZTEST_CONF_CONFIG_FILE', str, os.path.join(env.CONF_DIR.value(), 'config.json'))
 
 
 class Config(object):

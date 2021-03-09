@@ -5,7 +5,7 @@ import docker
 from ztest import env
 from utils.error import ZTestError
 
-FIRECRAKER_VM_DIR = env.env_var('ztest.firecracker.vmDir', str, '/var/lib/firecracker/vm/')
+FIRECRAKER_VM_DIR = env.env_var('ZTEST_FIRECRACKER_VM_DIR', str, '/var/lib/firecracker/vm/')
 
 
 class CleanupCmd(Cmd):

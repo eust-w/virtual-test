@@ -41,13 +41,13 @@ def set_env_var(name, value):
     os.environ[name] = str(value)
 
 
-CONF_DIR = env_var('ztest.conf.dir', str, os.path.expanduser('~/.ztest'))
-SOURCE_PARENT_DIR_IN_VM = env_var('ztest.vm.source.parent.dir', str, '/root')
-SSH_PRIV_KEY_FILE = env_var('ztest.ssh.privatekey', str, os.path.join(CONF_DIR.value(), 'ssh/id_rsa'))
-SSH_PUB_KEY_FILE = env_var('ztest.ssh.privatekey', str, os.path.join(CONF_DIR.value(), 'ssh/id_rsa.pub'))
-TEST_ENV_DIR_IN_VM = env_var('ztest.vm.testVenvDir', str, '/root/test-venv')
-ZSTACK_UTILITY_SRC_IN_VM = env_var('ztest.vm.zstackUtilityDir', str, '/root/zstack-utility')
-TEST_FOR_OUTPUT_DIR = env_var('ztest.case.testForDir', str, default='/root/ztest-test-for')
+CONF_DIR = env_var('ZTEST_CONF_DIR', str, os.path.expanduser('~/.ztest'))
+SOURCE_PARENT_DIR_IN_VM = env_var('ZTEST_VM_SOURCE_PARENT_DIR', str, '/root')
+SSH_PRIV_KEY_FILE = env_var('ZTEST_SSH_PRIVATE_KEY', str, os.path.join(CONF_DIR.value(), 'ssh/id_rsa'))
+SSH_PUB_KEY_FILE = env_var('ZTEST_SSH_PUBLIC_KEY', str, os.path.join(CONF_DIR.value(), 'ssh/id_rsa.pub'))
+TEST_ENV_DIR_IN_VM = env_var('ZTEST_VM_TEST_VENV_DIR', str, '/root/test-venv')
+ZSTACK_UTILITY_SRC_IN_VM = env_var('ZTEST_VM_ZSTACK_UTILITY_DIR', str, '/root/zstack-utility')
+TEST_FOR_OUTPUT_DIR = env_var('ZTEST_CASE_TEST_FOR_DIR', str, default='/root/ztest-test-for')
 DEBUG = env_var('ZTEST_DEBUG', str, default=None)
 
 if not os.path.isdir(CONF_DIR.value()):
@@ -75,4 +75,4 @@ env_file_path_in_vm = '/root/env_vars.json'
 
 def set_ssh_private_key_to_vm_env_vars():
     with open(SSH_PRIV_KEY_FILE.value(), 'r') as fd:
-        set_vm_env_var('ztest.vm.ssh.privKeyText', fd.read())
+        set_vm_env_var('ZTEST_VM_SSH_PRIVATE_KEY_TEXT', fd.read())

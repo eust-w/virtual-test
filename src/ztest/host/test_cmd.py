@@ -10,9 +10,8 @@ from ztest import env
 from ztest.core import Cmd
 from ztest.host.vm_utils import run_vm, wait_for_vm_sshd, sync_source
 
-SOURCE_DIR = env.env_var('ztest.source.dir', str, None)
-TEST_IMAGE_TAG = env.env_var('ztest.image.tag', str, 'pyut:0.3')
-TEST_SOURCE_ROOT_FOLDER_NAME = env.env_var('ztest.source.rootFolderName', str, 'zstack-utility')
+SOURCE_DIR = env.env_var('ZTEST_SOURCE_DIR', str, None)
+TEST_SOURCE_ROOT_FOLDER_NAME = env.env_var('ZTEST_SOURCE_ROOT_FOLDER_NAME', str, 'zstack-utility')
 
 
 class CasePath(object):
@@ -149,7 +148,7 @@ class RunTest(Cmd):
             'ip': self.vm_id,
         }
 
-        env.set_vm_env_var('ztest.envMetadata', json.dumps(test_env_metadata))
+        env.set_vm_env_var('ZTEST_ENV_METADATA', json.dumps(test_env_metadata))
         env.set_ssh_private_key_to_vm_env_vars()
         vm_utils.create_env_var_file_in_vm(self.vm_id)
 

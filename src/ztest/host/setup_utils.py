@@ -33,7 +33,7 @@ class VmSetup(object):
             'ip': vm_ip
         }
 
-        env.set_vm_env_var('ztest.vm.%s' % vm_name, json.dumps(vm_info))
+        env.set_vm_env_var('ZTEST_VM_%s' % vm_name, json.dumps(vm_info))
 
         def cleanup():
             ignite.kill_vms([vm_id])

@@ -30,8 +30,8 @@ _excluded_source_dirs = [
     '*.pyc'
 ]
 
-DOCKER_IMAGE_TEST_SOURCE_EXCLUDED = env.env_var('ztest.docker.baseImage.testSourceExcluded', str, ','.join(_excluded_source_dirs))
-DOCKER_IMAGE_TAG = env.env_var('ztest.docker.baseImage.tag', str, 'ztest:latest')
+DOCKER_IMAGE_TEST_SOURCE_EXCLUDED = env.env_var('ZTEST_DOCKER_BASE_IMAGE_TEST_SOURCE_EXCLUDED', str, ','.join(_excluded_source_dirs))
+DOCKER_IMAGE_TAG = env.env_var('ZTEST_DOCKER_BASE_IMAGE_TAG', str, 'ztest:latest')
 
 
 def copy_source_to_tmpdir(test_src, build_root):

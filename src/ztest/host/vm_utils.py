@@ -20,8 +20,8 @@ def run_vm(vm_name, image=config.CONFIG.conf.image_tag, kernel=config.CONFIG.con
     return vm_id, vm_ip
 
 
-WAIT_FOR_VM_SSD_TIMEOUT = env.env_var('ztest.vm.waitSshdTimeout', int, 30)
-WAIT_FOR_VM_SSD_CHECK_INTERVAL = env.env_var('ztest.vm.checkSshdUpInterval', float, 0.5)
+WAIT_FOR_VM_SSD_TIMEOUT = env.env_var('ZTEST_VM_WAIT_SSHD_TIMEOUT', int, 30)
+WAIT_FOR_VM_SSD_CHECK_INTERVAL = env.env_var('ZTEST_VM_CHECK_SSHD_UP_INTERVAL', float, 0.5)
 
 
 @retry(time_out=WAIT_FOR_VM_SSD_TIMEOUT.value(), check_interval=WAIT_FOR_VM_SSD_CHECK_INTERVAL.value())
