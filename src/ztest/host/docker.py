@@ -145,7 +145,7 @@ def import_image(path):
         else:
             return img
 
-    raise ValueError('cannot find image[%s] imported, run "docker image ls" to check')
+    raise ValueError('cannot find image[%s] imported, run "docker image ls" to check' % path)
 
 
 def export_image(tag, path):

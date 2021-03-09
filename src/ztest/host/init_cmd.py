@@ -8,7 +8,7 @@ import docker
 from ztest import config
 
 KERNEL_TAG = 'ztest:kernel-4.19.125'
-WRAPPER_IMAGE_TAG = 'weaveworks/ignite-ubuntu:latest'
+SANDBOX_IMAGE_TAG = 'weaveworks/ignite:v0.8.0'
 
 
 def init_check():
@@ -49,18 +49,18 @@ class InitCmd(Cmd):
 
         bash.call_with_screen_output('tar xzf %s -C %s' % (self.tar, base_dir))
 
-        wrapper_dir = os.path.join(base_dir, 'wrapper')
+        wrapper_dir = os.path.join(base_dir, 'sandbox')
         if not os.path.isdir(wrapper_dir):
-            raise ZTestError('tar file[%s] not containing wrapper/ directory' % self.tar)
+            raise ZTestError('tar file[%s] not containing sandbox/ directory' % self.tar)
 
         wrapper_files = os.listdir(wrapper_dir)
         if len(wrapper_files) == 0:
-            raise ZTestError("tar file[%s]'s wrapper/ directory contains no file" % self.tar)
+            raise ZTestError("tar file[%s]'s sandbox/ directory contains no file" % self.tar)
 
         if len(wrapper_files) > 1:
-            raise ZTestError("tar file[%s]'s wrapper/ directory contains more than one files%s" % (self.tar, wrapper_files))
+            raise ZTestError("tar file[%s]'s sandbox/ directory contains more than one files%s" % (self.tar, wrapper_files))
 
-        wrapper_container_image = wrapper_files[0]
+        wrapper_container_image = os.path.join(wrapper_dir, wrapper_files[0])
 
         kernel_dir = os.path.join(base_dir, 'kernel')
         if not os.path.isdir(kernel_dir):
@@ -73,12 +73,12 @@ class InitCmd(Cmd):
         if len(kernel_files) > 1:
             raise ZTestError("tar file[%s]'s kernel/ directory contains more than one files%s" % (self.tar, kernel_files))
 
-        kernel = kernel_files[0]
+        kernel = os.path.join(kernel_dir, kernel_files[0])
 
         wrapper_existed = False
         images = ignite.list_all_images()
         for img in images:
-            if img.metadata.name == WRAPPER_IMAGE_TAG:
+            if img.metadata.name == SANDBOX_IMAGE_TAG:
                 wrapper_existed = True
                 break
 
@@ -92,16 +92,17 @@ class InitCmd(Cmd):
             wi = docker.import_image(wrapper_container_image)
             tag = '%s:%s' % (wi.Repository, wi.Tag)
             ignite.import_image(tag)
-            self.info('\n\nSUCCESSFULLY imported ignite wrapper image: %s' % tag)
+
+            config.CONFIG.set_sandbox_tag(tag)
+            self.info('\n\nSUCCESSFULLY imported ignite sandbox image: %s' % tag)
         else:
-            self.info('ignite wrapper image: %s existed, skip importing' % WRAPPER_IMAGE_TAG)
+            self.info('ignite wrapper image: %s existed, skip importing' % SANDBOX_IMAGE_TAG)
 
         if not kernel_existed:
-            ki = docker.import_image(kernel)
-            tag = '%s:%s' % (ki.Repository, ki.Tag)
-            ignite.import_image(tag)
+            bash.call_with_screen_output('cat %s | docker import - %s' % (kernel, self.kernel_tag))
+            ignite.import_kernel(self.kernel_tag)
 
-            config.CONFIG.set_kernel_tag(tag)
-            self.info('\n\nSUCCESSFULLY imported kernel image: %s' % tag)
+            config.CONFIG.set_kernel_tag(self.kernel_tag)
+            self.info('\n\nSUCCESSFULLY imported kernel image: %s' % self.kernel_tag)
         else:
             self.info('kernel image: %s existed, skip importing' % self.kernel_tag)

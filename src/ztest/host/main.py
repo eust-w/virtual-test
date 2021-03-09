@@ -33,7 +33,7 @@ commands = [
 
 
 def err_exit(err):
-    sys.stderr.write('%s\n' % err)
+    sys.stderr.write('ERROR: %s\n' % err)
     sys.exit(1)
 
 

@@ -27,6 +27,10 @@ class Config(object):
         self.conf.kernel_tag = tag
         self.save()
 
+    def set_sandbox_tag(self, tag):
+        self.conf.sandbox_tag = tag
+        self.save()
+
 
 CONFIG = Config()  # type: Config
 

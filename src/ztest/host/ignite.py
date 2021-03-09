@@ -2,6 +2,7 @@ from utils import bash
 from utils import json
 from utils.error import ZTestError
 from ztest import env
+from ztest import config
 
 
 def list_all_vm_ids(include_stopped=False):
@@ -168,8 +169,8 @@ def get_vm_first_ip(vm_id):
     return get_vm_ips(vm_id)[0]
 
 
-def run_vm(image, vm_name, kernel=None, memory=None, cpu=None, disk=None):
-    # type: (str, str, str, str, int, str) -> str
+def run_vm(image, vm_name, kernel=None, memory=None, cpu=None, disk=None, sandbox=config.CONFIG.conf.sandbox_tag):
+    # type: (str, str, str, str, int, str, str) -> str
 
     cmd = ['ignite run %s --name %s --ssh=%s' % (image, vm_name, env.SSH_PUB_KEY_FILE.value())]
     if kernel is not None:
@@ -180,6 +181,8 @@ def run_vm(image, vm_name, kernel=None, memory=None, cpu=None, disk=None):
         cmd.append('--cpus %s' % cpu)
     if disk is not None:
         cmd.append('--size %s' % disk)
+    if sandbox is not None:
+        cmd.append('--sandbox-image %s' % sandbox)
 
     bash.call_with_screen_output(' '.join(cmd))
 
@@ -202,6 +205,12 @@ def rm_vms(ids):
 
     if ids:
         bash.call_with_screen_output('ignite rm %s' % ' '.join(ids))
+
+
+def import_kernel(tag):
+    # type: (str) -> None
+
+    bash.call_with_screen_output('ignite kernel import %s --runtime docker' % tag)
 
 
 def import_image(tag):
