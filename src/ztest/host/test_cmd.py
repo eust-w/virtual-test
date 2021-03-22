@@ -145,7 +145,8 @@ class RunTest(Cmd):
 
     def _set_vm_env_vars(self):
         test_env_metadata = {
-            'ip': self.vm_id,
+            'id': self.vm_id,
+            'ip': self.vm_ip,
         }
 
         env.set_vm_env_var('ZTEST_ENV_METADATA', json.dumps(test_env_metadata))

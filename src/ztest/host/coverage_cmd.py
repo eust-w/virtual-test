@@ -10,6 +10,8 @@ import ignite
 from ztest import env
 import tempfile
 
+from ztest.host import vm_utils
+
 
 class HandlerCoverBy(object):
     def __init__(self, file_name, function_name):
@@ -61,6 +63,10 @@ class CoverageCmd(Cmd):
         if self.handler:
             self._report_handler()
 
+    def _set_vm_env_vars(self, vm_id):
+        env.set_ssh_private_key_to_vm_env_vars()
+        vm_utils.create_env_var_file_in_vm(vm_id)
+
     def _report_handler(self):
         if os.path.isfile(self.src):
             src_files = [self.src]
@@ -80,9 +86,22 @@ class CoverageCmd(Cmd):
 
         vm_id, vm_ip = ztest.host.vm_utils.run_vm('dry-run', fail_on_existing_vm=False)
         ztest.host.vm_utils.wait_for_vm_sshd(vm_id, vm_ip)
+        self._set_vm_env_vars(vm_id)
 
-        case_path = test_cmd.CasePath(self.src)
-        ztest.host.vm_utils.sync_source(vm_ip, case_path.source_root)
+        try:
+            source_root_index = self.src.index(test_cmd.TEST_SOURCE_ROOT_FOLDER_NAME.value())
+        except ValueError:
+            raise ZTestError('cannot find "%s" in path: %s' % (test_cmd.TEST_SOURCE_ROOT_FOLDER_NAME.value(), self.src))
+
+        ss = [n for n in self.src.split(os.sep) if n.strip('\t\r\n ')]
+        if os.path.isabs(self.src):
+            p = [os.sep]
+            p.extend(ss[:source_root_index + 1])
+            source_root = os.sep.join(p)
+        else:
+            source_root = os.sep.join(ss[:source_root_index+1])
+
+        ztest.host.vm_utils.sync_source(vm_ip, source_root)
 
         tmp_dir = tempfile.mkdtemp()
         ignite.bash_call_with_screen_output(vm_id, 'zguest dry-run-all')
